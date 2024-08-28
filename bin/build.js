@@ -3,11 +3,11 @@ import { readdirSync } from 'fs';
 import { join, sep } from 'path';
 
 // Config output
-const BUILD_DIRECTORY = 'dist';
+const BUILD_DIRECTORY = 'public';
 const PRODUCTION = process.env.NODE_ENV === 'production';
 
 // Config entrypoint files
-const ENTRY_POINTS = ['src/index.ts'];
+const ENTRY_POINTS = ['src/lp.js', 'src/referral.js'];
 
 // Config dev serving
 const LIVE_RELOAD = !PRODUCTION;
