@@ -1,0 +1,10 @@
+.sr-button:hover svg{ transform: translateX(0.25rem); }
+
+.sr-button svg{transition: transform 250ms ease;}
+
+.swiper.is-testimonial .swiper-slide{margin-right: 0 !important;}
+
+.slider-btn[aria-disabled="true"]{opacity: 0.1;}
+
+
+
