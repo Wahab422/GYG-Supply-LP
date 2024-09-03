@@ -1,10 +1,24 @@
-.sr-button:hover svg{ transform: translateX(0.25rem); }
+.sr-button:hover svg {
+  transform: translateX(0.25rem);
+}
 
-.sr-button svg{transition: transform 250ms ease;}
+.sr-button svg {
+  transition: transform 250ms ease;
+}
 
-.swiper.is-testimonial .swiper-slide{margin-right: 0 !important;}
+.swiper.is-testimonial .swiper-slide {
+  margin-right: 0 !important;
+}
 
-.slider-btn[aria-disabled="true"]{opacity: 0.1;}
+.slider-btn[aria-disabled='true'] {
+  opacity: 0.1;
+}
 
-
-
+.navigation-block:not(.open) .overview-text-block {
+  transform: translateY(1rem);
+  opacity: 0;
+  pointer-events: none;
+}
+.navigation-block:not(.open) .navigation-block-icon {
+  transform: rotateX('180');
+}

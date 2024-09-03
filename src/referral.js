@@ -202,42 +202,131 @@ function handleSwiper() {
 }
 //
 function handleCode() {
+  //
   (() => {
-    document.querySelectorAll('[scroll-to]').forEach((btn) => {
+    document.querySelectorAll('.navigation-block [scroll-to]').forEach((btn) => {
+      if (window.innerWidth < 767) {
+        document.querySelector('.navigation-block .overview-btn').addEventListener('click', () => {
+          if (!document.querySelector('.navigation-block').classList.contains('open')) {
+            document.querySelector('.navigation-block').classList.add('open');
+          } else {
+            document.querySelector('.navigation-block').classList.remove('open');
+          }
+        });
+        document.querySelector('[navigation-block-links-mobile]').appendChild(btn);
+        document.querySelectorAll('[navigation-block-links-mobile] [scroll-to]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            document.querySelector('.navigation-block').classList.remove('open');
+          });
+        });
+      }
       if (btn.getAttribute('scroll-to')) {
         btn.addEventListener('click', () => {
-          document.querySelectorAll('[scroll-to]').forEach((btn) => btn.classList.remove('active'));
+          document
+            .querySelectorAll('.navigation-block [scroll-to]')
+            .forEach((btn) => btn.classList.remove('active'));
           btn.classList.add('active');
           lenis.scrollTo(
             document.querySelector(`[anchor-navigation-title= "${btn.getAttribute('scroll-to')}"]`)
           );
+          if (window.innerWidth < 767) {
+            document.querySelector('[navigation-block-text]').innerHTML = btn.innerHTML;
+          }
         });
       } else {
         btn.remove();
       }
     });
     //
-    // document.querySelectorAll('[anchor-navigation-title]').forEach((item) => {
-    //   window.addEventListener('scroll', () => {
-    //     let anchorID = item.getAttribute('feature_ID');
-    //     let rect2 = item.getBoundingClientRect();
-    //     let offsetTop = rect2.top + window.pageYOffset;
-    //     let topDifference = offsetTop - window.scrollY;
-    //     if ((topDifference < 500) & (topDifference > 0)) {
-    //       document.querySelectorAll('[anchor_ID]').forEach((ele) => ele.classList.remove('active'));
-    //       document.querySelector(`[anchor_ID="${anchorID}"]`).classList.add('active');
-    //     }
-    //   });
-    // });
+    (() => {
+      gsap.fromTo(
+        '.navigation-block',
+        { opacity: 0, y: '40', pointerEvents: 'none' },
+        {
+          opacity: 1,
+          y: '0',
+          pointerEvents: 'auto',
+          scrollTrigger: {
+            trigger: '[section-show-navigation]',
+            start: 'top 35%',
+            toggleActions: 'play none none reverse',
+          },
+        }
+      );
+
+      // Animation to hide the navigation block when the footer comes into view
+      ScrollTrigger.create({
+        trigger: 'footer',
+        start: 'top center',
+        end: 'bottom center',
+        onEnter: () =>
+          gsap.to('.navigation-block', {
+            opacity: 0,
+            y: '40',
+            pointerEvents: 'none',
+            duration: 0.5,
+          }),
+        onLeaveBack: () =>
+          gsap.to('.navigation-block', {
+            opacity: 1,
+            y: '0',
+            pointerEvents: 'auto',
+            duration: 0.5,
+          }),
+        onEnterBack: () =>
+          gsap.to('.navigation-block', {
+            opacity: 0,
+            y: '40',
+            pointerEvents: 'none',
+            duration: 0.5,
+          }),
+        onLeave: () =>
+          gsap.to('.navigation-block', {
+            opacity: 1,
+            y: '0',
+            pointerEvents: 'auto',
+            duration: 0.5,
+          }),
+      });
+    })();
+    (() => {
+      document.querySelectorAll('[anchor-navigation-title]').forEach((item) => {
+        window.addEventListener('scroll', () => {
+          let navigationTitle = item.getAttribute('anchor-navigation-title');
+          let rect2 = item.getBoundingClientRect();
+          let offsetTop = rect2.top + window.pageYOffset;
+          let topDifference = offsetTop - window.scrollY;
+          if ((topDifference < 500) & (topDifference > 0)) {
+            document
+              .querySelectorAll(
+                '.navigation-block [scroll-to] , [navigation-block-links-mobile] [scroll-to]'
+              )
+              .forEach((ele) => ele.classList.remove('active'));
+            document
+              .querySelectorAll(`.navigation-block [scroll-to="${navigationTitle}"]`)
+              .forEach((item) => item.classList.add('active'));
+            document.querySelector('[navigation-block-text]').innerHTML = document.querySelector(
+              `.navigation-block [scroll-to="${navigationTitle}"]`
+            ).innerHTML;
+          }
+        });
+      });
+    })();
   })();
   //
   (() => {
+    document.addEventListener('click', () => {
+      lenis.resize();
+      ScrollTrigger.update();
+      ScrollTrigger.refresh();
+    });
+    //
     const sections = document.querySelectorAll('section, footer');
     sections.forEach((section) => {
       ScrollTrigger.create({
         trigger: section,
-        start: 'top 80%',
         onEnter: () => {
+          lenis.resize();
           ScrollTrigger.update();
           ScrollTrigger.refresh();
         },
@@ -249,20 +338,22 @@ function handleCode() {
     if (window.innerWidth < 767) return;
     gsap.to('[logos-block-1]', {
       x: '30%',
-      duration: 2,
+      duration: 5,
+      ease: 'cubic-bezier(.22,.6,.36,1)',
       scrollTrigger: {
         trigger: '.section-booking',
-        scrub: 1.5,
+        scrub: 2.5,
         start: 'top 50%',
         end: 'bottom bottom',
       },
     });
     gsap.to('[logos-block-2]', {
       x: '-30%',
-      duration: 2,
+      duration: 5,
+      ease: 'cubic-bezier(.22,.6,.36,1)',
       scrollTrigger: {
         trigger: '.section-booking',
-        scrub: 1.5,
+        scrub: 2.5,
         start: 'top 50%',
         end: 'bottom bottom',
       },
@@ -281,19 +372,19 @@ function handleCode() {
   })();
   //
   (() => {
-    const tl = gsap.timeline(); // No easing applied at the timeline level
+    const tl = gsap.timeline();
 
     tl.from('[supply-hero-image-circle]', {
       width: '50%',
-      duration: 1,
-      ease: 'back.out(1.7)', // Apply elastic easing here
+      duration: 1.35,
+      ease: 'back.out(0.8)',
     })
       .from(
         '[supply-hero-image]',
         {
           scale: 3,
-          duration: 1,
-          ease: 'back.out(1.7)', // Apply elastic easing here
+          duration: 1.35,
+          ease: 'back.out(0.8)',
         },
         '<'
       )
@@ -301,9 +392,9 @@ function handleCode() {
         '[supply-hero-mobile-mockup]',
         {
           y: '20%',
-          duration: 1,
+          duration: 1.35,
           opacity: 0,
-          ease: 'back.out(1.7)', // Apply elastic easing here
+          ease: 'back.out(0.8)',
         },
         '<'
       )
@@ -311,9 +402,10 @@ function handleCode() {
         '[supply-hero-item-1]',
         {
           x: '-40%',
-          duration: 1,
+          duration: 1.35,
           opacity: 0,
-          ease: 'back.out(1.7)', // Apply elastic easing here
+          delay: 0.15,
+          ease: 'back.out(0.8)',
         },
         '<'
       )
@@ -321,14 +413,36 @@ function handleCode() {
         '[supply-hero-item-2]',
         {
           x: '40%',
-          duration: 1,
+          duration: 1.35,
           opacity: 0,
-          ease: 'back.out(1.7)', // Apply elastic easing here
+          delay: 0.15,
+          ease: 'back.out(0.8)',
         },
         '<'
       );
   })();
-
+  //
+  (() => {
+    document.querySelectorAll('[point-grid]').forEach((grid) => {
+      gsap.from(grid.querySelectorAll('.point-number-block , .point-text-block'), {
+        y: '1.5rem',
+        delay: grid.getAttribute('data-delay'),
+        opacity: 0,
+        stagger: 0.2,
+        ease: 'cubic-bezier(.22,.6,.36,1)',
+        duration: 0.55,
+        scrollTrigger: grid,
+      });
+      gsap.from(grid.querySelectorAll('.border'), {
+        width: '0%',
+        delay: grid.getAttribute('data-delay'),
+        duration: 1.25,
+        stagger: 0.8,
+        ease: 'cubic-bezier(.22,.6,.36,1)',
+        scrollTrigger: grid,
+      });
+    });
+  })();
   // Footer Scroll Animation
   FooterScroll();
   function FooterScroll() {
