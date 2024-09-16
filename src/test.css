@@ -1,0 +1,6 @@
+[loading-screen-logo] path{fill: currentColor!important;}
+
+
+.loading-screen{display: flex;}
+
+html:not(.ready) body{height: 100vh; overflow: hidden;}

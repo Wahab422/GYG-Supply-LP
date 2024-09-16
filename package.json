@@ -62,7 +62,8 @@
     "split-lines": "^3.0.0",
     "split-text": "^1.0.0",
     "split-type": "^0.3.4",
-    "swiper": "^11.1.1"
+    "swiper": "^11.1.1",
+    "vidstack": "^1.12.10"
   },
   "engines": {
     "pnpm": ">=9"

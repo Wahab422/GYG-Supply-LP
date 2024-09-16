@@ -121,6 +121,10 @@ function handleAnimation() {
 
 function init() {
   html.classList.add('ready');
+  window.onload = function () {
+    lenis.scrollTo(0, { duration: 0, easing: [0.25, 0.0, 0.35, 1.0] });
+  };
+
   handleScroll();
   handleCode();
   handleAnimation();
@@ -338,22 +342,22 @@ function handleCode() {
     if (window.innerWidth < 767) return;
     gsap.to('[logos-block-1]', {
       x: '30%',
-      duration: 5,
-      ease: 'cubic-bezier(.22,.6,.36,1)',
+      duration: 2,
+      ease: 'ease',
       scrollTrigger: {
         trigger: '.section-booking',
-        scrub: 2.5,
+        scrub: 1,
         start: 'top 50%',
         end: 'bottom bottom',
       },
     });
     gsap.to('[logos-block-2]', {
       x: '-30%',
-      duration: 5,
-      ease: 'cubic-bezier(.22,.6,.36,1)',
+      duration: 2,
+      ease: 'ease',
       scrollTrigger: {
         trigger: '.section-booking',
-        scrub: 2.5,
+        scrub: 1,
         start: 'top 50%',
         end: 'bottom bottom',
       },

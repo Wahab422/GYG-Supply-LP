@@ -7,7 +7,7 @@ const BUILD_DIRECTORY = 'public';
 const PRODUCTION = process.env.NODE_ENV === 'production';
 
 // Config entrypoint files
-const ENTRY_POINTS = ['src/landing_page.js', 'src/referral.js'];
+const ENTRY_POINTS = ['src/landing_page.js', 'src/referral.js', 'src/fall_release.js'];
 
 // Config dev serving
 const LIVE_RELOAD = !PRODUCTION;
