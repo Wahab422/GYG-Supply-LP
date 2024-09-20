@@ -1,6 +1,72 @@
-[loading-screen-logo] path{fill: currentColor!important;}
+[loading-screen-logo] path {
+  fill: currentColor !important;
+}
+
+.loading-screen {
+  display: flex;
+}
+
+html:not(.ready) body {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Basic styling */
+.icon {
+  display: inline-block;
+  font-size: 50px;
+  color: #333;
+  animation: float 3s ease-in-out infinite;
+}
+[data-anim-rotate],
+[anim-scale-up],
+[data-anim-hero-image],
+[anim-from-right],
+[anim-from-top],
+[data-anim],
+[data-stagger] > * {
+  transition:
+    opacity 1.25s var(--ease),
+    transform 1.25s var(--ease),
+    scale 1.25s var(--ease);
+}
+html:not(.ready) [data-anim],
+html:not(.ready) [data-stagger] > * {
+  opacity: 0;
+  transform: translate3d(0, 2rem, 0);
+}
+html:not(.ready) [anim-from-right],
+html:not(.ready) [data-stagger] > * {
+  opacity: 0;
+  transform: translate3d(2rem, 0, 0);
+}
+html:not(.ready) [anim-from-top],
+html:not(.ready) [data-stagger] > * {
+  opacity: 0;
+  transform: translate3d(0, -2rem, 0);
+}
+html:not(.ready) [anim-scale-up] {
+  transform: scale(0);
+}
+
+[activity-tab-btn]:not(.selected) {
+  border-color: var(--border-grey);
+  background-color: var(--white);
+  color: var(--text-grey);
+}
+
+.form-prev-step-block > div {
+  position: absolute;
+  top: 0;
+}
+
+[form-next-btn][disabled] , [form-prev-btn][disabled] , [form-submit-btn][disabled]{pointer-events: none; opacity: 0.3;}
 
 
-.loading-screen{display: flex;}
+.lang-dropdown:not(.open) .lang-list{opacity: 0; transform: scale(0);}
+.lang-dropdown.open .lang-toggle-arrow{transform: rotateZ('-180');}
 
-html:not(.ready) body{height: 100vh; overflow: hidden;}
+
+ul li::marker {
+  font-size: 3.15rem;
+}

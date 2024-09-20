@@ -1212,7 +1212,7 @@
   };
   var _tickerActive;
   var _ticker = function() {
-    var _getTime3 = Date.now, _lagThreshold = 500, _adjustedLag = 33, _startTime = _getTime3(), _lastUpdate = _startTime, _gap = 1e3 / 240, _nextTime = _gap, _listeners3 = [], _id, _req, _raf, _self, _delta, _i2, _tick = function _tick2(v) {
+    var _getTime3 = Date.now, _lagThreshold = 500, _adjustedLag = 33, _startTime = _getTime3(), _lastUpdate = _startTime, _gap = 1e3 / 240, _nextTime = _gap, _listeners3 = [], _id2, _req, _raf, _self, _delta, _i2, _tick = function _tick2(v) {
       var elapsed = _getTime3() - _lastUpdate, manual = v === true, overlap, dispatch, time, frame;
       (elapsed > _lagThreshold || elapsed < 0) && (_startTime += elapsed - _adjustedLag);
       _lastUpdate += elapsed;
@@ -1225,7 +1225,7 @@
         _nextTime += overlap + (overlap >= _gap ? 4 : _gap - overlap);
         dispatch = 1;
       }
-      manual || (_id = _req(_tick2));
+      manual || (_id2 = _req(_tick2));
       if (dispatch) {
         for (_i2 = 0; _i2 < _listeners3.length; _i2++) {
           _listeners3[_i2](time, _delta, frame, v);
@@ -1252,7 +1252,7 @@
             _registerPluginQueue.forEach(_createPlugin);
           }
           _raf = typeof requestAnimationFrame !== "undefined" && requestAnimationFrame;
-          _id && _self.sleep();
+          _id2 && _self.sleep();
           _req = _raf || function(f) {
             return setTimeout(f, _nextTime - _self.time * 1e3 + 1 | 0);
           };
@@ -1261,7 +1261,7 @@
         }
       },
       sleep: function sleep() {
-        (_raf ? cancelAnimationFrame : clearTimeout)(_id);
+        (_raf ? cancelAnimationFrame : clearTimeout)(_id2);
         _tickerActive = 0;
         _req = _emptyFunc;
       },
@@ -1772,7 +1772,7 @@
       _inheritDefaults(toVars).immediateRender = _isNotFalse(toVars.immediateRender);
       return this.staggerTo(targets, duration, toVars, stagger, position, onCompleteAll, onCompleteAllParams);
     };
-    _proto2.render = function render3(totalTime, suppressEvents, force) {
+    _proto2.render = function render4(totalTime, suppressEvents, force) {
       var prevTime = this._time, tDur = this._dirty ? this.totalDuration() : this._tDur, dur = this._dur, tTime = totalTime <= 0 ? 0 : _roundPrecise(totalTime), crossingStart = this._zTime < 0 !== totalTime < 0 && (this._initted || !dur), time, child, next, iteration, cycleDuration, prevPaused, pauseTween, timeScale, prevStart, prevIteration, yoyo, isYoyo;
       this !== _globalTimeline && tTime > tDur && totalTime >= 0 && (tTime = tDur);
       if (tTime !== this._tTime || force || crossingStart) {
@@ -2593,7 +2593,7 @@
       return _this3;
     }
     var _proto3 = Tween2.prototype;
-    _proto3.render = function render3(totalTime, suppressEvents, force) {
+    _proto3.render = function render4(totalTime, suppressEvents, force) {
       var prevTime = this._time, tDur = this._tDur, dur = this._dur, isNegative = totalTime < 0, tTime = totalTime > tDur - _tinyNum && !isNegative ? tDur : totalTime < _tinyNum ? 0 : totalTime, time, pt, iteration, cycleDuration, prevIteration, isYoyo, ratio, timeline2, yoyoEase;
       if (!dur) {
         _renderZeroDurationTween(this, totalTime, suppressEvents, force);
@@ -3346,7 +3346,7 @@
       name,
       rawVars: 1,
       //don't pre-process function-based values or "random()" strings.
-      init: function init5(target, vars, tween) {
+      init: function init6(target, vars, tween) {
         tween._onInit = function(tween2) {
           var temp, p;
           if (_isString(vars)) {
@@ -4524,6 +4524,1559 @@
   var gsapWithCSS = gsap.registerPlugin(CSSPlugin) || gsap;
   var TweenMaxWithCSS = gsapWithCSS.core.Tween;
 
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/DrawSVGPlugin.js
+  var gsap2;
+  var _toArray;
+  var _doc3;
+  var _win3;
+  var _isEdge;
+  var _coreInitted2;
+  var _warned;
+  var _getStyleSaver3;
+  var _reverting3;
+  var _windowExists5 = function _windowExists6() {
+    return typeof window !== "undefined";
+  };
+  var _getGSAP = function _getGSAP2() {
+    return gsap2 || _windowExists5() && (gsap2 = window.gsap) && gsap2.registerPlugin && gsap2;
+  };
+  var _numExp2 = /[-+=\.]*\d+[\.e\-\+]*\d*[e\-\+]*\d*/gi;
+  var _types = {
+    rect: ["width", "height"],
+    circle: ["r", "r"],
+    ellipse: ["rx", "ry"],
+    line: ["x2", "y2"]
+  };
+  var _round3 = function _round4(value) {
+    return Math.round(value * 1e4) / 1e4;
+  };
+  var _parseNum = function _parseNum2(value) {
+    return parseFloat(value) || 0;
+  };
+  var _parseSingleVal = function _parseSingleVal2(value, length) {
+    var num = _parseNum(value);
+    return ~value.indexOf("%") ? num / 100 * length : num;
+  };
+  var _getAttributeAsNumber = function _getAttributeAsNumber2(target, attr) {
+    return _parseNum(target.getAttribute(attr));
+  };
+  var _sqrt2 = Math.sqrt;
+  var _getDistance = function _getDistance2(x1, y1, x2, y2, scaleX, scaleY) {
+    return _sqrt2(Math.pow((_parseNum(x2) - _parseNum(x1)) * scaleX, 2) + Math.pow((_parseNum(y2) - _parseNum(y1)) * scaleY, 2));
+  };
+  var _warn3 = function _warn4(message) {
+    return console.warn(message);
+  };
+  var _hasNonScalingStroke = function _hasNonScalingStroke2(target) {
+    return target.getAttribute("vector-effect") === "non-scaling-stroke";
+  };
+  var _bonusValidated = 1;
+  var _parse = function _parse2(value, length, defaultStart) {
+    var i = value.indexOf(" "), s, e2;
+    if (i < 0) {
+      s = defaultStart !== void 0 ? defaultStart + "" : value;
+      e2 = value;
+    } else {
+      s = value.substr(0, i);
+      e2 = value.substr(i + 1);
+    }
+    s = _parseSingleVal(s, length);
+    e2 = _parseSingleVal(e2, length);
+    return s > e2 ? [e2, s] : [s, e2];
+  };
+  var _getLength = function _getLength2(target) {
+    target = _toArray(target)[0];
+    if (!target) {
+      return 0;
+    }
+    var type = target.tagName.toLowerCase(), style = target.style, scaleX = 1, scaleY = 1, length, bbox, points, prevPoint, i, rx, ry;
+    if (_hasNonScalingStroke(target)) {
+      scaleY = target.getScreenCTM();
+      scaleX = _sqrt2(scaleY.a * scaleY.a + scaleY.b * scaleY.b);
+      scaleY = _sqrt2(scaleY.d * scaleY.d + scaleY.c * scaleY.c);
+    }
+    try {
+      bbox = target.getBBox();
+    } catch (e2) {
+      _warn3("Some browsers won't measure invisible elements (like display:none or masks inside defs).");
+    }
+    var _ref = bbox || {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0
+    }, x = _ref.x, y = _ref.y, width = _ref.width, height = _ref.height;
+    if ((!bbox || !width && !height) && _types[type]) {
+      width = _getAttributeAsNumber(target, _types[type][0]);
+      height = _getAttributeAsNumber(target, _types[type][1]);
+      if (type !== "rect" && type !== "line") {
+        width *= 2;
+        height *= 2;
+      }
+      if (type === "line") {
+        x = _getAttributeAsNumber(target, "x1");
+        y = _getAttributeAsNumber(target, "y1");
+        width = Math.abs(width - x);
+        height = Math.abs(height - y);
+      }
+    }
+    if (type === "path") {
+      prevPoint = style.strokeDasharray;
+      style.strokeDasharray = "none";
+      length = target.getTotalLength() || 0;
+      _round3(scaleX) !== _round3(scaleY) && !_warned && (_warned = 1) && _warn3("Warning: <path> length cannot be measured when vector-effect is non-scaling-stroke and the element isn't proportionally scaled.");
+      length *= (scaleX + scaleY) / 2;
+      style.strokeDasharray = prevPoint;
+    } else if (type === "rect") {
+      length = width * 2 * scaleX + height * 2 * scaleY;
+    } else if (type === "line") {
+      length = _getDistance(x, y, x + width, y + height, scaleX, scaleY);
+    } else if (type === "polyline" || type === "polygon") {
+      points = target.getAttribute("points").match(_numExp2) || [];
+      type === "polygon" && points.push(points[0], points[1]);
+      length = 0;
+      for (i = 2; i < points.length; i += 2) {
+        length += _getDistance(points[i - 2], points[i - 1], points[i], points[i + 1], scaleX, scaleY) || 0;
+      }
+    } else if (type === "circle" || type === "ellipse") {
+      rx = width / 2 * scaleX;
+      ry = height / 2 * scaleY;
+      length = Math.PI * (3 * (rx + ry) - _sqrt2((3 * rx + ry) * (rx + 3 * ry)));
+    }
+    return length || 0;
+  };
+  var _getPosition = function _getPosition2(target, length) {
+    target = _toArray(target)[0];
+    if (!target) {
+      return [0, 0];
+    }
+    length || (length = _getLength(target) + 1);
+    var cs = _win3.getComputedStyle(target), dash = cs.strokeDasharray || "", offset = _parseNum(cs.strokeDashoffset), i = dash.indexOf(",");
+    i < 0 && (i = dash.indexOf(" "));
+    dash = i < 0 ? length : _parseNum(dash.substr(0, i));
+    dash > length && (dash = length);
+    return [-offset || 0, dash - offset || 0];
+  };
+  var _initCore3 = function _initCore4() {
+    if (_windowExists5()) {
+      _doc3 = document;
+      _win3 = window;
+      _coreInitted2 = gsap2 = _getGSAP();
+      _toArray = gsap2.utils.toArray;
+      _getStyleSaver3 = gsap2.core.getStyleSaver;
+      _reverting3 = gsap2.core.reverting || function() {
+      };
+      _isEdge = ((_win3.navigator || {}).userAgent || "").indexOf("Edge") !== -1;
+    }
+  };
+  var DrawSVGPlugin = {
+    version: "3.12.5",
+    name: "drawSVG",
+    register: function register(core) {
+      gsap2 = core;
+      _initCore3();
+    },
+    init: function init4(target, value, tween, index, targets) {
+      if (!target.getBBox) {
+        return false;
+      }
+      _coreInitted2 || _initCore3();
+      var length = _getLength(target), start, end, cs;
+      this.styles = _getStyleSaver3 && _getStyleSaver3(target, "strokeDashoffset,strokeDasharray,strokeMiterlimit");
+      this.tween = tween;
+      this._style = target.style;
+      this._target = target;
+      if (value + "" === "true") {
+        value = "0 100%";
+      } else if (!value) {
+        value = "0 0";
+      } else if ((value + "").indexOf(" ") === -1) {
+        value = "0 " + value;
+      }
+      start = _getPosition(target, length);
+      end = _parse(value, length, start[0]);
+      this._length = _round3(length);
+      this._dash = _round3(start[1] - start[0]);
+      this._offset = _round3(-start[0]);
+      this._dashPT = this.add(this, "_dash", this._dash, _round3(end[1] - end[0]), 0, 0, 0, 0, 0, 1);
+      this._offsetPT = this.add(this, "_offset", this._offset, _round3(-end[0]), 0, 0, 0, 0, 0, 1);
+      if (_isEdge) {
+        cs = _win3.getComputedStyle(target);
+        if (cs.strokeLinecap !== cs.strokeLinejoin) {
+          end = _parseNum(cs.strokeMiterlimit);
+          this.add(target.style, "strokeMiterlimit", end, end + 0.01);
+        }
+      }
+      this._live = _hasNonScalingStroke(target) || ~(value + "").indexOf("live");
+      this._nowrap = ~(value + "").indexOf("nowrap");
+      this._props.push("drawSVG");
+      return _bonusValidated;
+    },
+    render: function render3(ratio, data) {
+      if (data.tween._time || !_reverting3()) {
+        var pt = data._pt, style = data._style, length, lengthRatio, dash, offset;
+        if (pt) {
+          if (data._live) {
+            length = _getLength(data._target);
+            if (length !== data._length) {
+              lengthRatio = length / data._length;
+              data._length = length;
+              if (data._offsetPT) {
+                data._offsetPT.s *= lengthRatio;
+                data._offsetPT.c *= lengthRatio;
+              }
+              if (data._dashPT) {
+                data._dashPT.s *= lengthRatio;
+                data._dashPT.c *= lengthRatio;
+              } else {
+                data._dash *= lengthRatio;
+              }
+            }
+          }
+          while (pt) {
+            pt.r(ratio, pt.d);
+            pt = pt._next;
+          }
+          dash = data._dash || ratio && ratio !== 1 && 1e-4 || 0;
+          length = data._length - dash + 0.1;
+          offset = data._offset;
+          dash && offset && dash + Math.abs(offset % data._length) > data._length - 0.2 && (offset += offset < 0 ? 0.1 : -0.1) && (length += 0.1);
+          style.strokeDashoffset = dash ? offset : offset + 1e-3;
+          style.strokeDasharray = length < 0.2 ? "none" : dash ? dash + "px," + (data._nowrap ? 999999 : length) + "px" : "0px, 999999px";
+        }
+      } else {
+        data.styles.revert();
+      }
+    },
+    getLength: _getLength,
+    getPosition: _getPosition
+  };
+  _getGSAP() && gsap2.registerPlugin(DrawSVGPlugin);
+
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/utils/matrix.js
+  var _doc4;
+  var _win4;
+  var _docElement2;
+  var _body;
+  var _divContainer;
+  var _svgContainer;
+  var _identityMatrix;
+  var _gEl;
+  var _transformProp2 = "transform";
+  var _transformOriginProp2 = _transformProp2 + "Origin";
+  var _hasOffsetBug;
+  var _setDoc = function _setDoc2(element) {
+    var doc = element.ownerDocument || element;
+    if (!(_transformProp2 in element.style) && "msTransform" in element.style) {
+      _transformProp2 = "msTransform";
+      _transformOriginProp2 = _transformProp2 + "Origin";
+    }
+    while (doc.parentNode && (doc = doc.parentNode)) {
+    }
+    _win4 = window;
+    _identityMatrix = new Matrix2D();
+    if (doc) {
+      _doc4 = doc;
+      _docElement2 = doc.documentElement;
+      _body = doc.body;
+      _gEl = _doc4.createElementNS("http://www.w3.org/2000/svg", "g");
+      _gEl.style.transform = "none";
+      var d1 = doc.createElement("div"), d2 = doc.createElement("div"), root = doc && (doc.body || doc.firstElementChild);
+      if (root && root.appendChild) {
+        root.appendChild(d1);
+        d1.appendChild(d2);
+        d1.setAttribute("style", "position:static;transform:translate3d(0,0,1px)");
+        _hasOffsetBug = d2.offsetParent !== d1;
+        root.removeChild(d1);
+      }
+    }
+    return doc;
+  };
+  var _forceNonZeroScale = function _forceNonZeroScale2(e2) {
+    var a, cache;
+    while (e2 && e2 !== _body) {
+      cache = e2._gsap;
+      cache && cache.uncache && cache.get(e2, "x");
+      if (cache && !cache.scaleX && !cache.scaleY && cache.renderTransform) {
+        cache.scaleX = cache.scaleY = 1e-4;
+        cache.renderTransform(1, cache);
+        a ? a.push(cache) : a = [cache];
+      }
+      e2 = e2.parentNode;
+    }
+    return a;
+  };
+  var _svgTemps = [];
+  var _divTemps = [];
+  var _getDocScrollTop = function _getDocScrollTop2() {
+    return _win4.pageYOffset || _doc4.scrollTop || _docElement2.scrollTop || _body.scrollTop || 0;
+  };
+  var _getDocScrollLeft = function _getDocScrollLeft2() {
+    return _win4.pageXOffset || _doc4.scrollLeft || _docElement2.scrollLeft || _body.scrollLeft || 0;
+  };
+  var _svgOwner = function _svgOwner2(element) {
+    return element.ownerSVGElement || ((element.tagName + "").toLowerCase() === "svg" ? element : null);
+  };
+  var _isFixed = function _isFixed2(element) {
+    if (_win4.getComputedStyle(element).position === "fixed") {
+      return true;
+    }
+    element = element.parentNode;
+    if (element && element.nodeType === 1) {
+      return _isFixed2(element);
+    }
+  };
+  var _createSibling = function _createSibling2(element, i) {
+    if (element.parentNode && (_doc4 || _setDoc(element))) {
+      var svg = _svgOwner(element), ns = svg ? svg.getAttribute("xmlns") || "http://www.w3.org/2000/svg" : "http://www.w3.org/1999/xhtml", type = svg ? i ? "rect" : "g" : "div", x = i !== 2 ? 0 : 100, y = i === 3 ? 100 : 0, css = "position:absolute;display:block;pointer-events:none;margin:0;padding:0;", e2 = _doc4.createElementNS ? _doc4.createElementNS(ns.replace(/^https/, "http"), type) : _doc4.createElement(type);
+      if (i) {
+        if (!svg) {
+          if (!_divContainer) {
+            _divContainer = _createSibling2(element);
+            _divContainer.style.cssText = css;
+          }
+          e2.style.cssText = css + "width:0.1px;height:0.1px;top:" + y + "px;left:" + x + "px";
+          _divContainer.appendChild(e2);
+        } else {
+          _svgContainer || (_svgContainer = _createSibling2(element));
+          e2.setAttribute("width", 0.01);
+          e2.setAttribute("height", 0.01);
+          e2.setAttribute("transform", "translate(" + x + "," + y + ")");
+          _svgContainer.appendChild(e2);
+        }
+      }
+      return e2;
+    }
+    throw "Need document and parent.";
+  };
+  var _consolidate = function _consolidate2(m) {
+    var c = new Matrix2D(), i = 0;
+    for (; i < m.numberOfItems; i++) {
+      c.multiply(m.getItem(i).matrix);
+    }
+    return c;
+  };
+  var _getCTM = function _getCTM2(svg) {
+    var m = svg.getCTM(), transform;
+    if (!m) {
+      transform = svg.style[_transformProp2];
+      svg.style[_transformProp2] = "none";
+      svg.appendChild(_gEl);
+      m = _gEl.getCTM();
+      svg.removeChild(_gEl);
+      transform ? svg.style[_transformProp2] = transform : svg.style.removeProperty(_transformProp2.replace(/([A-Z])/g, "-$1").toLowerCase());
+    }
+    return m || _identityMatrix.clone();
+  };
+  var _placeSiblings = function _placeSiblings2(element, adjustGOffset) {
+    var svg = _svgOwner(element), isRootSVG = element === svg, siblings = svg ? _svgTemps : _divTemps, parent = element.parentNode, container, m, b, x, y, cs;
+    if (element === _win4) {
+      return element;
+    }
+    siblings.length || siblings.push(_createSibling(element, 1), _createSibling(element, 2), _createSibling(element, 3));
+    container = svg ? _svgContainer : _divContainer;
+    if (svg) {
+      if (isRootSVG) {
+        b = _getCTM(element);
+        x = -b.e / b.a;
+        y = -b.f / b.d;
+        m = _identityMatrix;
+      } else if (element.getBBox) {
+        b = element.getBBox();
+        m = element.transform ? element.transform.baseVal : {};
+        m = !m.numberOfItems ? _identityMatrix : m.numberOfItems > 1 ? _consolidate(m) : m.getItem(0).matrix;
+        x = m.a * b.x + m.c * b.y;
+        y = m.b * b.x + m.d * b.y;
+      } else {
+        m = new Matrix2D();
+        x = y = 0;
+      }
+      if (adjustGOffset && element.tagName.toLowerCase() === "g") {
+        x = y = 0;
+      }
+      (isRootSVG ? svg : parent).appendChild(container);
+      container.setAttribute("transform", "matrix(" + m.a + "," + m.b + "," + m.c + "," + m.d + "," + (m.e + x) + "," + (m.f + y) + ")");
+    } else {
+      x = y = 0;
+      if (_hasOffsetBug) {
+        m = element.offsetParent;
+        b = element;
+        while (b && (b = b.parentNode) && b !== m && b.parentNode) {
+          if ((_win4.getComputedStyle(b)[_transformProp2] + "").length > 4) {
+            x = b.offsetLeft;
+            y = b.offsetTop;
+            b = 0;
+          }
+        }
+      }
+      cs = _win4.getComputedStyle(element);
+      if (cs.position !== "absolute" && cs.position !== "fixed") {
+        m = element.offsetParent;
+        while (parent && parent !== m) {
+          x += parent.scrollLeft || 0;
+          y += parent.scrollTop || 0;
+          parent = parent.parentNode;
+        }
+      }
+      b = container.style;
+      b.top = element.offsetTop - y + "px";
+      b.left = element.offsetLeft - x + "px";
+      b[_transformProp2] = cs[_transformProp2];
+      b[_transformOriginProp2] = cs[_transformOriginProp2];
+      b.position = cs.position === "fixed" ? "fixed" : "absolute";
+      element.parentNode.appendChild(container);
+    }
+    return container;
+  };
+  var _setMatrix = function _setMatrix2(m, a, b, c, d, e2, f) {
+    m.a = a;
+    m.b = b;
+    m.c = c;
+    m.d = d;
+    m.e = e2;
+    m.f = f;
+    return m;
+  };
+  var Matrix2D = /* @__PURE__ */ function() {
+    function Matrix2D2(a, b, c, d, e2, f) {
+      if (a === void 0) {
+        a = 1;
+      }
+      if (b === void 0) {
+        b = 0;
+      }
+      if (c === void 0) {
+        c = 0;
+      }
+      if (d === void 0) {
+        d = 1;
+      }
+      if (e2 === void 0) {
+        e2 = 0;
+      }
+      if (f === void 0) {
+        f = 0;
+      }
+      _setMatrix(this, a, b, c, d, e2, f);
+    }
+    var _proto = Matrix2D2.prototype;
+    _proto.inverse = function inverse() {
+      var a = this.a, b = this.b, c = this.c, d = this.d, e2 = this.e, f = this.f, determinant = a * d - b * c || 1e-10;
+      return _setMatrix(this, d / determinant, -b / determinant, -c / determinant, a / determinant, (c * f - d * e2) / determinant, -(a * f - b * e2) / determinant);
+    };
+    _proto.multiply = function multiply(matrix) {
+      var a = this.a, b = this.b, c = this.c, d = this.d, e2 = this.e, f = this.f, a2 = matrix.a, b2 = matrix.c, c2 = matrix.b, d2 = matrix.d, e22 = matrix.e, f2 = matrix.f;
+      return _setMatrix(this, a2 * a + c2 * c, a2 * b + c2 * d, b2 * a + d2 * c, b2 * b + d2 * d, e2 + e22 * a + f2 * c, f + e22 * b + f2 * d);
+    };
+    _proto.clone = function clone() {
+      return new Matrix2D2(this.a, this.b, this.c, this.d, this.e, this.f);
+    };
+    _proto.equals = function equals(matrix) {
+      var a = this.a, b = this.b, c = this.c, d = this.d, e2 = this.e, f = this.f;
+      return a === matrix.a && b === matrix.b && c === matrix.c && d === matrix.d && e2 === matrix.e && f === matrix.f;
+    };
+    _proto.apply = function apply(point, decoratee) {
+      if (decoratee === void 0) {
+        decoratee = {};
+      }
+      var x = point.x, y = point.y, a = this.a, b = this.b, c = this.c, d = this.d, e2 = this.e, f = this.f;
+      decoratee.x = x * a + y * c + e2 || 0;
+      decoratee.y = x * b + y * d + f || 0;
+      return decoratee;
+    };
+    return Matrix2D2;
+  }();
+  function getGlobalMatrix(element, inverse, adjustGOffset, includeScrollInFixed) {
+    if (!element || !element.parentNode || (_doc4 || _setDoc(element)).documentElement === element) {
+      return new Matrix2D();
+    }
+    var zeroScales = _forceNonZeroScale(element), svg = _svgOwner(element), temps = svg ? _svgTemps : _divTemps, container = _placeSiblings(element, adjustGOffset), b1 = temps[0].getBoundingClientRect(), b2 = temps[1].getBoundingClientRect(), b3 = temps[2].getBoundingClientRect(), parent = container.parentNode, isFixed = !includeScrollInFixed && _isFixed(element), m = new Matrix2D((b2.left - b1.left) / 100, (b2.top - b1.top) / 100, (b3.left - b1.left) / 100, (b3.top - b1.top) / 100, b1.left + (isFixed ? 0 : _getDocScrollLeft()), b1.top + (isFixed ? 0 : _getDocScrollTop()));
+    parent.removeChild(container);
+    if (zeroScales) {
+      b1 = zeroScales.length;
+      while (b1--) {
+        b2 = zeroScales[b1];
+        b2.scaleX = b2.scaleY = 0;
+        b2.renderTransform(1, b2);
+      }
+    }
+    return inverse ? m.inverse() : m;
+  }
+
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/Flip.js
+  var _id = 1;
+  var _toArray2;
+  var gsap3;
+  var _batch;
+  var _batchAction;
+  var _body2;
+  var _closestTenth;
+  var _getStyleSaver4;
+  var _forEachBatch = function _forEachBatch2(batch, name) {
+    return batch.actions.forEach(function(a) {
+      return a.vars[name] && a.vars[name](a);
+    });
+  };
+  var _batchLookup = {};
+  var _RAD2DEG2 = 180 / Math.PI;
+  var _DEG2RAD2 = Math.PI / 180;
+  var _emptyObj = {};
+  var _dashedNameLookup = {};
+  var _memoizedRemoveProps = {};
+  var _listToArray = function _listToArray2(list) {
+    return typeof list === "string" ? list.split(" ").join("").split(",") : list;
+  };
+  var _callbacks = _listToArray("onStart,onUpdate,onComplete,onReverseComplete,onInterrupt");
+  var _removeProps = _listToArray("transform,transformOrigin,width,height,position,top,left,opacity,zIndex,maxWidth,maxHeight,minWidth,minHeight");
+  var _getEl = function _getEl2(target) {
+    return _toArray2(target)[0] || console.warn("Element not found:", target);
+  };
+  var _round5 = function _round6(value) {
+    return Math.round(value * 1e4) / 1e4 || 0;
+  };
+  var _toggleClass = function _toggleClass2(targets, className, action) {
+    return targets.forEach(function(el) {
+      return el.classList[action](className);
+    });
+  };
+  var _reserved = {
+    zIndex: 1,
+    kill: 1,
+    simple: 1,
+    spin: 1,
+    clearProps: 1,
+    targets: 1,
+    toggleClass: 1,
+    onComplete: 1,
+    onUpdate: 1,
+    onInterrupt: 1,
+    onStart: 1,
+    delay: 1,
+    repeat: 1,
+    repeatDelay: 1,
+    yoyo: 1,
+    scale: 1,
+    fade: 1,
+    absolute: 1,
+    props: 1,
+    onEnter: 1,
+    onLeave: 1,
+    custom: 1,
+    paused: 1,
+    nested: 1,
+    prune: 1,
+    absoluteOnLeave: 1
+  };
+  var _fitReserved = {
+    zIndex: 1,
+    simple: 1,
+    clearProps: 1,
+    scale: 1,
+    absolute: 1,
+    fitChild: 1,
+    getVars: 1,
+    props: 1
+  };
+  var _camelToDashed = function _camelToDashed2(p) {
+    return p.replace(/([A-Z])/g, "-$1").toLowerCase();
+  };
+  var _copy = function _copy2(obj, exclude) {
+    var result = {}, p;
+    for (p in obj) {
+      exclude[p] || (result[p] = obj[p]);
+    }
+    return result;
+  };
+  var _memoizedProps = {};
+  var _memoizeProps = function _memoizeProps2(props) {
+    var p = _memoizedProps[props] = _listToArray(props);
+    _memoizedRemoveProps[props] = p.concat(_removeProps);
+    return p;
+  };
+  var _getInverseGlobalMatrix = function _getInverseGlobalMatrix2(el) {
+    var cache = el._gsap || gsap3.core.getCache(el);
+    if (cache.gmCache === gsap3.ticker.frame) {
+      return cache.gMatrix;
+    }
+    cache.gmCache = gsap3.ticker.frame;
+    return cache.gMatrix = getGlobalMatrix(el, true, false, true);
+  };
+  var _getDOMDepth = function _getDOMDepth2(el, invert, level) {
+    if (level === void 0) {
+      level = 0;
+    }
+    var parent = el.parentNode, inc = 1e3 * Math.pow(10, level) * (invert ? -1 : 1), l = invert ? -inc * 900 : 0;
+    while (el) {
+      l += inc;
+      el = el.previousSibling;
+    }
+    return parent ? l + _getDOMDepth2(parent, invert, level + 1) : l;
+  };
+  var _orderByDOMDepth = function _orderByDOMDepth2(comps, invert, isElStates) {
+    comps.forEach(function(comp) {
+      return comp.d = _getDOMDepth(isElStates ? comp.element : comp.t, invert);
+    });
+    comps.sort(function(c1, c2) {
+      return c1.d - c2.d;
+    });
+    return comps;
+  };
+  var _recordInlineStyles = function _recordInlineStyles2(elState, props) {
+    var style = elState.element.style, a = elState.css = elState.css || [], i = props.length, p, v;
+    while (i--) {
+      p = props[i];
+      v = style[p] || style.getPropertyValue(p);
+      a.push(v ? p : _dashedNameLookup[p] || (_dashedNameLookup[p] = _camelToDashed(p)), v);
+    }
+    return style;
+  };
+  var _applyInlineStyles = function _applyInlineStyles2(state) {
+    var css = state.css, style = state.element.style, i = 0;
+    state.cache.uncache = 1;
+    for (; i < css.length; i += 2) {
+      css[i + 1] ? style[css[i]] = css[i + 1] : style.removeProperty(css[i]);
+    }
+    if (!css[css.indexOf("transform") + 1] && style.translate) {
+      style.removeProperty("translate");
+      style.removeProperty("scale");
+      style.removeProperty("rotate");
+    }
+  };
+  var _setFinalStates = function _setFinalStates2(comps, onlyTransforms) {
+    comps.forEach(function(c) {
+      return c.a.cache.uncache = 1;
+    });
+    onlyTransforms || comps.finalStates.forEach(_applyInlineStyles);
+  };
+  var _absoluteProps = "paddingTop,paddingRight,paddingBottom,paddingLeft,gridArea,transition".split(",");
+  var _makeAbsolute = function _makeAbsolute2(elState, fallbackNode, ignoreBatch) {
+    var element = elState.element, width = elState.width, height = elState.height, uncache = elState.uncache, getProp = elState.getProp, style = element.style, i = 4, result, displayIsNone, cs;
+    typeof fallbackNode !== "object" && (fallbackNode = elState);
+    if (_batch && ignoreBatch !== 1) {
+      _batch._abs.push({
+        t: element,
+        b: elState,
+        a: elState,
+        sd: 0
+      });
+      _batch._final.push(function() {
+        return (elState.cache.uncache = 1) && _applyInlineStyles(elState);
+      });
+      return element;
+    }
+    displayIsNone = getProp("display") === "none";
+    if (!elState.isVisible || displayIsNone) {
+      displayIsNone && (_recordInlineStyles(elState, ["display"]).display = fallbackNode.display);
+      elState.matrix = fallbackNode.matrix;
+      elState.width = width = elState.width || fallbackNode.width;
+      elState.height = height = elState.height || fallbackNode.height;
+    }
+    _recordInlineStyles(elState, _absoluteProps);
+    cs = window.getComputedStyle(element);
+    while (i--) {
+      style[_absoluteProps[i]] = cs[_absoluteProps[i]];
+    }
+    style.gridArea = "1 / 1 / 1 / 1";
+    style.transition = "none";
+    style.position = "absolute";
+    style.width = width + "px";
+    style.height = height + "px";
+    style.top || (style.top = "0px");
+    style.left || (style.left = "0px");
+    if (uncache) {
+      result = new ElementState(element);
+    } else {
+      result = _copy(elState, _emptyObj);
+      result.position = "absolute";
+      if (elState.simple) {
+        var bounds = element.getBoundingClientRect();
+        result.matrix = new Matrix2D(1, 0, 0, 1, bounds.left + _getDocScrollLeft(), bounds.top + _getDocScrollTop());
+      } else {
+        result.matrix = getGlobalMatrix(element, false, false, true);
+      }
+    }
+    result = _fit(result, elState, true);
+    elState.x = _closestTenth(result.x, 0.01);
+    elState.y = _closestTenth(result.y, 0.01);
+    return element;
+  };
+  var _filterComps = function _filterComps2(comps, targets) {
+    if (targets !== true) {
+      targets = _toArray2(targets);
+      comps = comps.filter(function(c) {
+        if (targets.indexOf((c.sd < 0 ? c.b : c.a).element) !== -1) {
+          return true;
+        } else {
+          c.t._gsap.renderTransform(1);
+          if (c.b.isVisible) {
+            c.t.style.width = c.b.width + "px";
+            c.t.style.height = c.b.height + "px";
+          }
+        }
+      });
+    }
+    return comps;
+  };
+  var _makeCompsAbsolute = function _makeCompsAbsolute2(comps) {
+    return _orderByDOMDepth(comps, true).forEach(function(c) {
+      return (c.a.isVisible || c.b.isVisible) && _makeAbsolute(c.sd < 0 ? c.b : c.a, c.b, 1);
+    });
+  };
+  var _findElStateInState = function _findElStateInState2(state, other) {
+    return other && state.idLookup[_parseElementState(other).id] || state.elementStates[0];
+  };
+  var _parseElementState = function _parseElementState2(elOrNode, props, simple, other) {
+    return elOrNode instanceof ElementState ? elOrNode : elOrNode instanceof FlipState ? _findElStateInState(elOrNode, other) : new ElementState(typeof elOrNode === "string" ? _getEl(elOrNode) || console.warn(elOrNode + " not found") : elOrNode, props, simple);
+  };
+  var _recordProps = function _recordProps2(elState, props) {
+    var getProp = gsap3.getProperty(elState.element, null, "native"), obj = elState.props = {}, i = props.length;
+    while (i--) {
+      obj[props[i]] = (getProp(props[i]) + "").trim();
+    }
+    obj.zIndex && (obj.zIndex = parseFloat(obj.zIndex) || 0);
+    return elState;
+  };
+  var _applyProps = function _applyProps2(element, props) {
+    var style = element.style || element, p;
+    for (p in props) {
+      style[p] = props[p];
+    }
+  };
+  var _getID = function _getID2(el) {
+    var id = el.getAttribute("data-flip-id");
+    id || el.setAttribute("data-flip-id", id = "auto-" + _id++);
+    return id;
+  };
+  var _elementsFromElementStates = function _elementsFromElementStates2(elStates) {
+    return elStates.map(function(elState) {
+      return elState.element;
+    });
+  };
+  var _handleCallback = function _handleCallback2(callback, elStates, tl) {
+    return callback && elStates.length && tl.add(callback(_elementsFromElementStates(elStates), tl, new FlipState(elStates, 0, true)), 0);
+  };
+  var _fit = function _fit2(fromState, toState, scale, applyProps, fitChild, vars) {
+    var element = fromState.element, cache = fromState.cache, parent = fromState.parent, x = fromState.x, y = fromState.y, width = toState.width, height = toState.height, scaleX = toState.scaleX, scaleY = toState.scaleY, rotation = toState.rotation, bounds = toState.bounds, styles = vars && _getStyleSaver4 && _getStyleSaver4(element, "transform"), dimensionState = fromState, _toState$matrix = toState.matrix, e2 = _toState$matrix.e, f = _toState$matrix.f, deep = fromState.bounds.width !== bounds.width || fromState.bounds.height !== bounds.height || fromState.scaleX !== scaleX || fromState.scaleY !== scaleY || fromState.rotation !== rotation, simple = !deep && fromState.simple && toState.simple && !fitChild, skewX, fromPoint, toPoint, getProp, parentMatrix, matrix, bbox;
+    if (simple || !parent) {
+      scaleX = scaleY = 1;
+      rotation = skewX = 0;
+    } else {
+      parentMatrix = _getInverseGlobalMatrix(parent);
+      matrix = parentMatrix.clone().multiply(toState.ctm ? toState.matrix.clone().multiply(toState.ctm) : toState.matrix);
+      rotation = _round5(Math.atan2(matrix.b, matrix.a) * _RAD2DEG2);
+      skewX = _round5(Math.atan2(matrix.c, matrix.d) * _RAD2DEG2 + rotation) % 360;
+      scaleX = Math.sqrt(Math.pow(matrix.a, 2) + Math.pow(matrix.b, 2));
+      scaleY = Math.sqrt(Math.pow(matrix.c, 2) + Math.pow(matrix.d, 2)) * Math.cos(skewX * _DEG2RAD2);
+      if (fitChild) {
+        fitChild = _toArray2(fitChild)[0];
+        getProp = gsap3.getProperty(fitChild);
+        bbox = fitChild.getBBox && typeof fitChild.getBBox === "function" && fitChild.getBBox();
+        dimensionState = {
+          scaleX: getProp("scaleX"),
+          scaleY: getProp("scaleY"),
+          width: bbox ? bbox.width : Math.ceil(parseFloat(getProp("width", "px"))),
+          height: bbox ? bbox.height : parseFloat(getProp("height", "px"))
+        };
+      }
+      cache.rotation = rotation + "deg";
+      cache.skewX = skewX + "deg";
+    }
+    if (scale) {
+      scaleX *= width === dimensionState.width || !dimensionState.width ? 1 : width / dimensionState.width;
+      scaleY *= height === dimensionState.height || !dimensionState.height ? 1 : height / dimensionState.height;
+      cache.scaleX = scaleX;
+      cache.scaleY = scaleY;
+    } else {
+      width = _closestTenth(width * scaleX / dimensionState.scaleX, 0);
+      height = _closestTenth(height * scaleY / dimensionState.scaleY, 0);
+      element.style.width = width + "px";
+      element.style.height = height + "px";
+    }
+    applyProps && _applyProps(element, toState.props);
+    if (simple || !parent) {
+      x += e2 - fromState.matrix.e;
+      y += f - fromState.matrix.f;
+    } else if (deep || parent !== toState.parent) {
+      cache.renderTransform(1, cache);
+      matrix = getGlobalMatrix(fitChild || element, false, false, true);
+      fromPoint = parentMatrix.apply({
+        x: matrix.e,
+        y: matrix.f
+      });
+      toPoint = parentMatrix.apply({
+        x: e2,
+        y: f
+      });
+      x += toPoint.x - fromPoint.x;
+      y += toPoint.y - fromPoint.y;
+    } else {
+      parentMatrix.e = parentMatrix.f = 0;
+      toPoint = parentMatrix.apply({
+        x: e2 - fromState.matrix.e,
+        y: f - fromState.matrix.f
+      });
+      x += toPoint.x;
+      y += toPoint.y;
+    }
+    x = _closestTenth(x, 0.02);
+    y = _closestTenth(y, 0.02);
+    if (vars && !(vars instanceof ElementState)) {
+      styles && styles.revert();
+    } else {
+      cache.x = x + "px";
+      cache.y = y + "px";
+      cache.renderTransform(1, cache);
+    }
+    if (vars) {
+      vars.x = x;
+      vars.y = y;
+      vars.rotation = rotation;
+      vars.skewX = skewX;
+      if (scale) {
+        vars.scaleX = scaleX;
+        vars.scaleY = scaleY;
+      } else {
+        vars.width = width;
+        vars.height = height;
+      }
+    }
+    return vars || cache;
+  };
+  var _parseState = function _parseState2(targetsOrState, vars) {
+    return targetsOrState instanceof FlipState ? targetsOrState : new FlipState(targetsOrState, vars);
+  };
+  var _getChangingElState = function _getChangingElState2(toState, fromState, id) {
+    var to1 = toState.idLookup[id], to2 = toState.alt[id];
+    return to2.isVisible && (!(fromState.getElementState(to2.element) || to2).isVisible || !to1.isVisible) ? to2 : to1;
+  };
+  var _bodyMetrics = [];
+  var _bodyProps = "width,height,overflowX,overflowY".split(",");
+  var _bodyLocked;
+  var _lockBodyScroll = function _lockBodyScroll2(lock) {
+    if (lock !== _bodyLocked) {
+      var s = _body2.style, w = _body2.clientWidth === window.outerWidth, h = _body2.clientHeight === window.outerHeight, i = 4;
+      if (lock && (w || h)) {
+        while (i--) {
+          _bodyMetrics[i] = s[_bodyProps[i]];
+        }
+        if (w) {
+          s.width = _body2.clientWidth + "px";
+          s.overflowY = "hidden";
+        }
+        if (h) {
+          s.height = _body2.clientHeight + "px";
+          s.overflowX = "hidden";
+        }
+        _bodyLocked = lock;
+      } else if (_bodyLocked) {
+        while (i--) {
+          _bodyMetrics[i] ? s[_bodyProps[i]] = _bodyMetrics[i] : s.removeProperty(_camelToDashed(_bodyProps[i]));
+        }
+        _bodyLocked = lock;
+      }
+    }
+  };
+  var _fromTo = function _fromTo2(fromState, toState, vars, relative) {
+    fromState instanceof FlipState && toState instanceof FlipState || console.warn("Not a valid state object.");
+    vars = vars || {};
+    var _vars = vars, clearProps2 = _vars.clearProps, onEnter = _vars.onEnter, onLeave = _vars.onLeave, absolute = _vars.absolute, absoluteOnLeave = _vars.absoluteOnLeave, custom = _vars.custom, delay = _vars.delay, paused = _vars.paused, repeat = _vars.repeat, repeatDelay = _vars.repeatDelay, yoyo = _vars.yoyo, toggleClass = _vars.toggleClass, nested = _vars.nested, _zIndex = _vars.zIndex, scale = _vars.scale, fade = _vars.fade, stagger = _vars.stagger, spin = _vars.spin, prune = _vars.prune, props = ("props" in vars ? vars : fromState).props, tweenVars = _copy(vars, _reserved), animation = gsap3.timeline({
+      delay,
+      paused,
+      repeat,
+      repeatDelay,
+      yoyo,
+      data: "isFlip"
+    }), remainingProps = tweenVars, entering = [], leaving = [], comps = [], swapOutTargets = [], spinNum = spin === true ? 1 : spin || 0, spinFunc = typeof spin === "function" ? spin : function() {
+      return spinNum;
+    }, interrupted = fromState.interrupted || toState.interrupted, addFunc = animation[relative !== 1 ? "to" : "from"], v, p, endTime, i, el, comp, state, targets, finalStates, fromNode, toNode, run, a, b;
+    for (p in toState.idLookup) {
+      toNode = !toState.alt[p] ? toState.idLookup[p] : _getChangingElState(toState, fromState, p);
+      el = toNode.element;
+      fromNode = fromState.idLookup[p];
+      fromState.alt[p] && el === fromNode.element && (fromState.alt[p].isVisible || !toNode.isVisible) && (fromNode = fromState.alt[p]);
+      if (fromNode) {
+        comp = {
+          t: el,
+          b: fromNode,
+          a: toNode,
+          sd: fromNode.element === el ? 0 : toNode.isVisible ? 1 : -1
+        };
+        comps.push(comp);
+        if (comp.sd) {
+          if (comp.sd < 0) {
+            comp.b = toNode;
+            comp.a = fromNode;
+          }
+          interrupted && _recordInlineStyles(comp.b, props ? _memoizedRemoveProps[props] : _removeProps);
+          fade && comps.push(comp.swap = {
+            t: fromNode.element,
+            b: comp.b,
+            a: comp.a,
+            sd: -comp.sd,
+            swap: comp
+          });
+        }
+        el._flip = fromNode.element._flip = _batch ? _batch.timeline : animation;
+      } else if (toNode.isVisible) {
+        comps.push({
+          t: el,
+          b: _copy(toNode, {
+            isVisible: 1
+          }),
+          a: toNode,
+          sd: 0,
+          entering: 1
+        });
+        el._flip = _batch ? _batch.timeline : animation;
+      }
+    }
+    props && (_memoizedProps[props] || _memoizeProps(props)).forEach(function(p2) {
+      return tweenVars[p2] = function(i2) {
+        return comps[i2].a.props[p2];
+      };
+    });
+    comps.finalStates = finalStates = [];
+    run = function run2() {
+      _orderByDOMDepth(comps);
+      _lockBodyScroll(true);
+      for (i = 0; i < comps.length; i++) {
+        comp = comps[i];
+        a = comp.a;
+        b = comp.b;
+        if (prune && !a.isDifferent(b) && !comp.entering) {
+          comps.splice(i--, 1);
+        } else {
+          el = comp.t;
+          nested && !(comp.sd < 0) && i && (a.matrix = getGlobalMatrix(el, false, false, true));
+          if (b.isVisible && a.isVisible) {
+            if (comp.sd < 0) {
+              state = new ElementState(el, props, fromState.simple);
+              _fit(state, a, scale, 0, 0, state);
+              state.matrix = getGlobalMatrix(el, false, false, true);
+              state.css = comp.b.css;
+              comp.a = a = state;
+              fade && (el.style.opacity = interrupted ? b.opacity : a.opacity);
+              stagger && swapOutTargets.push(el);
+            } else if (comp.sd > 0 && fade) {
+              el.style.opacity = interrupted ? a.opacity - b.opacity : "0";
+            }
+            _fit(a, b, scale, props);
+          } else if (b.isVisible !== a.isVisible) {
+            if (!b.isVisible) {
+              a.isVisible && entering.push(a);
+              comps.splice(i--, 1);
+            } else if (!a.isVisible) {
+              b.css = a.css;
+              leaving.push(b);
+              comps.splice(i--, 1);
+              absolute && nested && _fit(a, b, scale, props);
+            }
+          }
+          if (!scale) {
+            el.style.maxWidth = Math.max(a.width, b.width) + "px";
+            el.style.maxHeight = Math.max(a.height, b.height) + "px";
+            el.style.minWidth = Math.min(a.width, b.width) + "px";
+            el.style.minHeight = Math.min(a.height, b.height) + "px";
+          }
+          nested && toggleClass && el.classList.add(toggleClass);
+        }
+        finalStates.push(a);
+      }
+      var classTargets;
+      if (toggleClass) {
+        classTargets = finalStates.map(function(s) {
+          return s.element;
+        });
+        nested && classTargets.forEach(function(e2) {
+          return e2.classList.remove(toggleClass);
+        });
+      }
+      _lockBodyScroll(false);
+      if (scale) {
+        tweenVars.scaleX = function(i2) {
+          return comps[i2].a.scaleX;
+        };
+        tweenVars.scaleY = function(i2) {
+          return comps[i2].a.scaleY;
+        };
+      } else {
+        tweenVars.width = function(i2) {
+          return comps[i2].a.width + "px";
+        };
+        tweenVars.height = function(i2) {
+          return comps[i2].a.height + "px";
+        };
+        tweenVars.autoRound = vars.autoRound || false;
+      }
+      tweenVars.x = function(i2) {
+        return comps[i2].a.x + "px";
+      };
+      tweenVars.y = function(i2) {
+        return comps[i2].a.y + "px";
+      };
+      tweenVars.rotation = function(i2) {
+        return comps[i2].a.rotation + (spin ? spinFunc(i2, targets[i2], targets) * 360 : 0);
+      };
+      tweenVars.skewX = function(i2) {
+        return comps[i2].a.skewX;
+      };
+      targets = comps.map(function(c) {
+        return c.t;
+      });
+      if (_zIndex || _zIndex === 0) {
+        tweenVars.modifiers = {
+          zIndex: function zIndex() {
+            return _zIndex;
+          }
+        };
+        tweenVars.zIndex = _zIndex;
+        tweenVars.immediateRender = vars.immediateRender !== false;
+      }
+      fade && (tweenVars.opacity = function(i2) {
+        return comps[i2].sd < 0 ? 0 : comps[i2].sd > 0 ? comps[i2].a.opacity : "+=0";
+      });
+      if (swapOutTargets.length) {
+        stagger = gsap3.utils.distribute(stagger);
+        var dummyArray = targets.slice(swapOutTargets.length);
+        tweenVars.stagger = function(i2, el2) {
+          return stagger(~swapOutTargets.indexOf(el2) ? targets.indexOf(comps[i2].swap.t) : i2, el2, dummyArray);
+        };
+      }
+      _callbacks.forEach(function(name) {
+        return vars[name] && animation.eventCallback(name, vars[name], vars[name + "Params"]);
+      });
+      if (custom && targets.length) {
+        remainingProps = _copy(tweenVars, _reserved);
+        if ("scale" in custom) {
+          custom.scaleX = custom.scaleY = custom.scale;
+          delete custom.scale;
+        }
+        for (p in custom) {
+          v = _copy(custom[p], _fitReserved);
+          v[p] = tweenVars[p];
+          !("duration" in v) && "duration" in tweenVars && (v.duration = tweenVars.duration);
+          v.stagger = tweenVars.stagger;
+          addFunc.call(animation, targets, v, 0);
+          delete remainingProps[p];
+        }
+      }
+      if (targets.length || leaving.length || entering.length) {
+        toggleClass && animation.add(function() {
+          return _toggleClass(classTargets, toggleClass, animation._zTime < 0 ? "remove" : "add");
+        }, 0) && !paused && _toggleClass(classTargets, toggleClass, "add");
+        targets.length && addFunc.call(animation, targets, remainingProps, 0);
+      }
+      _handleCallback(onEnter, entering, animation);
+      _handleCallback(onLeave, leaving, animation);
+      var batchTl = _batch && _batch.timeline;
+      if (batchTl) {
+        batchTl.add(animation, 0);
+        _batch._final.push(function() {
+          return _setFinalStates(comps, !clearProps2);
+        });
+      }
+      endTime = animation.duration();
+      animation.call(function() {
+        var forward = animation.time() >= endTime;
+        forward && !batchTl && _setFinalStates(comps, !clearProps2);
+        toggleClass && _toggleClass(classTargets, toggleClass, forward ? "remove" : "add");
+      });
+    };
+    absoluteOnLeave && (absolute = comps.filter(function(comp2) {
+      return !comp2.sd && !comp2.a.isVisible && comp2.b.isVisible;
+    }).map(function(comp2) {
+      return comp2.a.element;
+    }));
+    if (_batch) {
+      var _batch$_abs;
+      absolute && (_batch$_abs = _batch._abs).push.apply(_batch$_abs, _filterComps(comps, absolute));
+      _batch._run.push(run);
+    } else {
+      absolute && _makeCompsAbsolute(_filterComps(comps, absolute));
+      run();
+    }
+    var anim = _batch ? _batch.timeline : animation;
+    anim.revert = function() {
+      return _killFlip(anim, 1, 1);
+    };
+    return anim;
+  };
+  var _interrupt3 = function _interrupt4(tl) {
+    tl.vars.onInterrupt && tl.vars.onInterrupt.apply(tl, tl.vars.onInterruptParams || []);
+    tl.getChildren(true, false, true).forEach(_interrupt4);
+  };
+  var _killFlip = function _killFlip2(tl, action, force) {
+    if (tl && tl.progress() < 1 && (!tl.paused() || force)) {
+      if (action) {
+        _interrupt3(tl);
+        action < 2 && tl.progress(1);
+        tl.kill();
+      }
+      return true;
+    }
+  };
+  var _createLookup = function _createLookup2(state) {
+    var lookup = state.idLookup = {}, alt = state.alt = {}, elStates = state.elementStates, i = elStates.length, elState;
+    while (i--) {
+      elState = elStates[i];
+      lookup[elState.id] ? alt[elState.id] = elState : lookup[elState.id] = elState;
+    }
+  };
+  var FlipState = /* @__PURE__ */ function() {
+    function FlipState2(targets, vars, targetsAreElementStates) {
+      this.props = vars && vars.props;
+      this.simple = !!(vars && vars.simple);
+      if (targetsAreElementStates) {
+        this.targets = _elementsFromElementStates(targets);
+        this.elementStates = targets;
+        _createLookup(this);
+      } else {
+        this.targets = _toArray2(targets);
+        var soft = vars && (vars.kill === false || vars.batch && !vars.kill);
+        _batch && !soft && _batch._kill.push(this);
+        this.update(soft || !!_batch);
+      }
+    }
+    var _proto = FlipState2.prototype;
+    _proto.update = function update(soft) {
+      var _this = this;
+      this.elementStates = this.targets.map(function(el) {
+        return new ElementState(el, _this.props, _this.simple);
+      });
+      _createLookup(this);
+      this.interrupt(soft);
+      this.recordInlineStyles();
+      return this;
+    };
+    _proto.clear = function clear() {
+      this.targets.length = this.elementStates.length = 0;
+      _createLookup(this);
+      return this;
+    };
+    _proto.fit = function fit(state, scale, nested) {
+      var elStatesInOrder = _orderByDOMDepth(this.elementStates.slice(0), false, true), toElStates = (state || this).idLookup, i = 0, fromNode, toNode;
+      for (; i < elStatesInOrder.length; i++) {
+        fromNode = elStatesInOrder[i];
+        nested && (fromNode.matrix = getGlobalMatrix(fromNode.element, false, false, true));
+        toNode = toElStates[fromNode.id];
+        toNode && _fit(fromNode, toNode, scale, true, 0, fromNode);
+        fromNode.matrix = getGlobalMatrix(fromNode.element, false, false, true);
+      }
+      return this;
+    };
+    _proto.getProperty = function getProperty2(element, property) {
+      var es = this.getElementState(element) || _emptyObj;
+      return (property in es ? es : es.props || _emptyObj)[property];
+    };
+    _proto.add = function add(state) {
+      var i = state.targets.length, lookup = this.idLookup, alt = this.alt, index, es, es2;
+      while (i--) {
+        es = state.elementStates[i];
+        es2 = lookup[es.id];
+        if (es2 && (es.element === es2.element || alt[es.id] && alt[es.id].element === es.element)) {
+          index = this.elementStates.indexOf(es.element === es2.element ? es2 : alt[es.id]);
+          this.targets.splice(index, 1, state.targets[i]);
+          this.elementStates.splice(index, 1, es);
+        } else {
+          this.targets.push(state.targets[i]);
+          this.elementStates.push(es);
+        }
+      }
+      state.interrupted && (this.interrupted = true);
+      state.simple || (this.simple = false);
+      _createLookup(this);
+      return this;
+    };
+    _proto.compare = function compare(state) {
+      var l1 = state.idLookup, l2 = this.idLookup, unchanged = [], changed = [], enter = [], leave = [], targets = [], a1 = state.alt, a2 = this.alt, place = function place2(s12, s22, el2) {
+        return (s12.isVisible !== s22.isVisible ? s12.isVisible ? enter : leave : s12.isVisible ? changed : unchanged).push(el2) && targets.push(el2);
+      }, placeIfDoesNotExist = function placeIfDoesNotExist2(s12, s22, el2) {
+        return targets.indexOf(el2) < 0 && place(s12, s22, el2);
+      }, s1, s2, p, el, s1Alt, s2Alt, c1, c2;
+      for (p in l1) {
+        s1Alt = a1[p];
+        s2Alt = a2[p];
+        s1 = !s1Alt ? l1[p] : _getChangingElState(state, this, p);
+        el = s1.element;
+        s2 = l2[p];
+        if (s2Alt) {
+          c2 = s2.isVisible || !s2Alt.isVisible && el === s2.element ? s2 : s2Alt;
+          c1 = s1Alt && !s1.isVisible && !s1Alt.isVisible && c2.element === s1Alt.element ? s1Alt : s1;
+          if (c1.isVisible && c2.isVisible && c1.element !== c2.element) {
+            (c1.isDifferent(c2) ? changed : unchanged).push(c1.element, c2.element);
+            targets.push(c1.element, c2.element);
+          } else {
+            place(c1, c2, c1.element);
+          }
+          s1Alt && c1.element === s1Alt.element && (s1Alt = l1[p]);
+          placeIfDoesNotExist(c1.element !== s2.element && s1Alt ? s1Alt : c1, s2, s2.element);
+          placeIfDoesNotExist(s1Alt && s1Alt.element === s2Alt.element ? s1Alt : c1, s2Alt, s2Alt.element);
+          s1Alt && placeIfDoesNotExist(s1Alt, s2Alt.element === s1Alt.element ? s2Alt : s2, s1Alt.element);
+        } else {
+          !s2 ? enter.push(el) : !s2.isDifferent(s1) ? unchanged.push(el) : place(s1, s2, el);
+          s1Alt && placeIfDoesNotExist(s1Alt, s2, s1Alt.element);
+        }
+      }
+      for (p in l2) {
+        if (!l1[p]) {
+          leave.push(l2[p].element);
+          a2[p] && leave.push(a2[p].element);
+        }
+      }
+      return {
+        changed,
+        unchanged,
+        enter,
+        leave
+      };
+    };
+    _proto.recordInlineStyles = function recordInlineStyles() {
+      var props = _memoizedRemoveProps[this.props] || _removeProps, i = this.elementStates.length;
+      while (i--) {
+        _recordInlineStyles(this.elementStates[i], props);
+      }
+    };
+    _proto.interrupt = function interrupt(soft) {
+      var _this2 = this;
+      var timelines = [];
+      this.targets.forEach(function(t2) {
+        var tl = t2._flip, foundInProgress = _killFlip(tl, soft ? 0 : 1);
+        soft && foundInProgress && timelines.indexOf(tl) < 0 && tl.add(function() {
+          return _this2.updateVisibility();
+        });
+        foundInProgress && timelines.push(tl);
+      });
+      !soft && timelines.length && this.updateVisibility();
+      this.interrupted || (this.interrupted = !!timelines.length);
+    };
+    _proto.updateVisibility = function updateVisibility() {
+      this.elementStates.forEach(function(es) {
+        var b = es.element.getBoundingClientRect();
+        es.isVisible = !!(b.width || b.height || b.top || b.left);
+        es.uncache = 1;
+      });
+    };
+    _proto.getElementState = function getElementState(element) {
+      return this.elementStates[this.targets.indexOf(_getEl(element))];
+    };
+    _proto.makeAbsolute = function makeAbsolute() {
+      return _orderByDOMDepth(this.elementStates.slice(0), true, true).map(_makeAbsolute);
+    };
+    return FlipState2;
+  }();
+  var ElementState = /* @__PURE__ */ function() {
+    function ElementState2(element, props, simple) {
+      this.element = element;
+      this.update(props, simple);
+    }
+    var _proto2 = ElementState2.prototype;
+    _proto2.isDifferent = function isDifferent(state) {
+      var b1 = this.bounds, b2 = state.bounds;
+      return b1.top !== b2.top || b1.left !== b2.left || b1.width !== b2.width || b1.height !== b2.height || !this.matrix.equals(state.matrix) || this.opacity !== state.opacity || this.props && state.props && JSON.stringify(this.props) !== JSON.stringify(state.props);
+    };
+    _proto2.update = function update(props, simple) {
+      var self = this, element = self.element, getProp = gsap3.getProperty(element), cache = gsap3.core.getCache(element), bounds = element.getBoundingClientRect(), bbox = element.getBBox && typeof element.getBBox === "function" && element.nodeName.toLowerCase() !== "svg" && element.getBBox(), m = simple ? new Matrix2D(1, 0, 0, 1, bounds.left + _getDocScrollLeft(), bounds.top + _getDocScrollTop()) : getGlobalMatrix(element, false, false, true);
+      self.getProp = getProp;
+      self.element = element;
+      self.id = _getID(element);
+      self.matrix = m;
+      self.cache = cache;
+      self.bounds = bounds;
+      self.isVisible = !!(bounds.width || bounds.height || bounds.left || bounds.top);
+      self.display = getProp("display");
+      self.position = getProp("position");
+      self.parent = element.parentNode;
+      self.x = getProp("x");
+      self.y = getProp("y");
+      self.scaleX = cache.scaleX;
+      self.scaleY = cache.scaleY;
+      self.rotation = getProp("rotation");
+      self.skewX = getProp("skewX");
+      self.opacity = getProp("opacity");
+      self.width = bbox ? bbox.width : _closestTenth(getProp("width", "px"), 0.04);
+      self.height = bbox ? bbox.height : _closestTenth(getProp("height", "px"), 0.04);
+      props && _recordProps(self, _memoizedProps[props] || _memoizeProps(props));
+      self.ctm = element.getCTM && element.nodeName.toLowerCase() === "svg" && _getCTM(element).inverse();
+      self.simple = simple || _round5(m.a) === 1 && !_round5(m.b) && !_round5(m.c) && _round5(m.d) === 1;
+      self.uncache = 0;
+    };
+    return ElementState2;
+  }();
+  var FlipAction = /* @__PURE__ */ function() {
+    function FlipAction2(vars, batch) {
+      this.vars = vars;
+      this.batch = batch;
+      this.states = [];
+      this.timeline = batch.timeline;
+    }
+    var _proto3 = FlipAction2.prototype;
+    _proto3.getStateById = function getStateById(id) {
+      var i = this.states.length;
+      while (i--) {
+        if (this.states[i].idLookup[id]) {
+          return this.states[i];
+        }
+      }
+    };
+    _proto3.kill = function kill() {
+      this.batch.remove(this);
+    };
+    return FlipAction2;
+  }();
+  var FlipBatch = /* @__PURE__ */ function() {
+    function FlipBatch2(id) {
+      this.id = id;
+      this.actions = [];
+      this._kill = [];
+      this._final = [];
+      this._abs = [];
+      this._run = [];
+      this.data = {};
+      this.state = new FlipState();
+      this.timeline = gsap3.timeline();
+    }
+    var _proto4 = FlipBatch2.prototype;
+    _proto4.add = function add(config3) {
+      var result = this.actions.filter(function(action) {
+        return action.vars === config3;
+      });
+      if (result.length) {
+        return result[0];
+      }
+      result = new FlipAction(typeof config3 === "function" ? {
+        animate: config3
+      } : config3, this);
+      this.actions.push(result);
+      return result;
+    };
+    _proto4.remove = function remove(action) {
+      var i = this.actions.indexOf(action);
+      i >= 0 && this.actions.splice(i, 1);
+      return this;
+    };
+    _proto4.getState = function getState(merge) {
+      var _this3 = this;
+      var prevBatch = _batch, prevAction = _batchAction;
+      _batch = this;
+      this.state.clear();
+      this._kill.length = 0;
+      this.actions.forEach(function(action) {
+        if (action.vars.getState) {
+          action.states.length = 0;
+          _batchAction = action;
+          action.state = action.vars.getState(action);
+        }
+        merge && action.states.forEach(function(s) {
+          return _this3.state.add(s);
+        });
+      });
+      _batchAction = prevAction;
+      _batch = prevBatch;
+      this.killConflicts();
+      return this;
+    };
+    _proto4.animate = function animate() {
+      var _this4 = this;
+      var prevBatch = _batch, tl = this.timeline, i = this.actions.length, finalStates, endTime;
+      _batch = this;
+      tl.clear();
+      this._abs.length = this._final.length = this._run.length = 0;
+      this.actions.forEach(function(a) {
+        a.vars.animate && a.vars.animate(a);
+        var onEnter = a.vars.onEnter, onLeave = a.vars.onLeave, targets = a.targets, s, result;
+        if (targets && targets.length && (onEnter || onLeave)) {
+          s = new FlipState();
+          a.states.forEach(function(state) {
+            return s.add(state);
+          });
+          result = s.compare(Flip.getState(targets));
+          result.enter.length && onEnter && onEnter(result.enter);
+          result.leave.length && onLeave && onLeave(result.leave);
+        }
+      });
+      _makeCompsAbsolute(this._abs);
+      this._run.forEach(function(f) {
+        return f();
+      });
+      endTime = tl.duration();
+      finalStates = this._final.slice(0);
+      tl.add(function() {
+        if (endTime <= tl.time()) {
+          finalStates.forEach(function(f) {
+            return f();
+          });
+          _forEachBatch(_this4, "onComplete");
+        }
+      });
+      _batch = prevBatch;
+      while (i--) {
+        this.actions[i].vars.once && this.actions[i].kill();
+      }
+      _forEachBatch(this, "onStart");
+      tl.restart();
+      return this;
+    };
+    _proto4.loadState = function loadState(done) {
+      done || (done = function done2() {
+        return 0;
+      });
+      var queue = [];
+      this.actions.forEach(function(c) {
+        if (c.vars.loadState) {
+          var i, f = function f2(targets) {
+            targets && (c.targets = targets);
+            i = queue.indexOf(f2);
+            if (~i) {
+              queue.splice(i, 1);
+              queue.length || done();
+            }
+          };
+          queue.push(f);
+          c.vars.loadState(f);
+        }
+      });
+      queue.length || done();
+      return this;
+    };
+    _proto4.setState = function setState() {
+      this.actions.forEach(function(c) {
+        return c.targets = c.vars.setState && c.vars.setState(c);
+      });
+      return this;
+    };
+    _proto4.killConflicts = function killConflicts(soft) {
+      this.state.interrupt(soft);
+      this._kill.forEach(function(state) {
+        return state.interrupt(soft);
+      });
+      return this;
+    };
+    _proto4.run = function run(skipGetState, merge) {
+      var _this5 = this;
+      if (this !== _batch) {
+        skipGetState || this.getState(merge);
+        this.loadState(function() {
+          if (!_this5._killed) {
+            _this5.setState();
+            _this5.animate();
+          }
+        });
+      }
+      return this;
+    };
+    _proto4.clear = function clear(stateOnly) {
+      this.state.clear();
+      stateOnly || (this.actions.length = 0);
+    };
+    _proto4.getStateById = function getStateById(id) {
+      var i = this.actions.length, s;
+      while (i--) {
+        s = this.actions[i].getStateById(id);
+        if (s) {
+          return s;
+        }
+      }
+      return this.state.idLookup[id] && this.state;
+    };
+    _proto4.kill = function kill() {
+      this._killed = 1;
+      this.clear();
+      delete _batchLookup[this.id];
+    };
+    return FlipBatch2;
+  }();
+  var Flip = /* @__PURE__ */ function() {
+    function Flip2() {
+    }
+    Flip2.getState = function getState(targets, vars) {
+      var state = _parseState(targets, vars);
+      _batchAction && _batchAction.states.push(state);
+      vars && vars.batch && Flip2.batch(vars.batch).state.add(state);
+      return state;
+    };
+    Flip2.from = function from(state, vars) {
+      vars = vars || {};
+      "clearProps" in vars || (vars.clearProps = true);
+      return _fromTo(state, _parseState(vars.targets || state.targets, {
+        props: vars.props || state.props,
+        simple: vars.simple,
+        kill: !!vars.kill
+      }), vars, -1);
+    };
+    Flip2.to = function to(state, vars) {
+      return _fromTo(state, _parseState(vars.targets || state.targets, {
+        props: vars.props || state.props,
+        simple: vars.simple,
+        kill: !!vars.kill
+      }), vars, 1);
+    };
+    Flip2.fromTo = function fromTo(fromState, toState, vars) {
+      return _fromTo(fromState, toState, vars);
+    };
+    Flip2.fit = function fit(fromEl, toEl, vars) {
+      var v = vars ? _copy(vars, _fitReserved) : {}, _ref = vars || v, absolute = _ref.absolute, scale = _ref.scale, getVars = _ref.getVars, props = _ref.props, runBackwards = _ref.runBackwards, onComplete = _ref.onComplete, simple = _ref.simple, fitChild = vars && vars.fitChild && _getEl(vars.fitChild), before = _parseElementState(toEl, props, simple, fromEl), after = _parseElementState(fromEl, 0, simple, before), inlineProps = props ? _memoizedRemoveProps[props] : _removeProps, ctx = gsap3.context();
+      props && _applyProps(v, before.props);
+      _recordInlineStyles(after, inlineProps);
+      if (runBackwards) {
+        "immediateRender" in v || (v.immediateRender = true);
+        v.onComplete = function() {
+          _applyInlineStyles(after);
+          onComplete && onComplete.apply(this, arguments);
+        };
+      }
+      absolute && _makeAbsolute(after, before);
+      v = _fit(after, before, scale || fitChild, props, fitChild, v.duration || getVars ? v : 0);
+      ctx && !getVars && ctx.add(function() {
+        return function() {
+          return _applyInlineStyles(after);
+        };
+      });
+      return getVars ? v : v.duration ? gsap3.to(after.element, v) : null;
+    };
+    Flip2.makeAbsolute = function makeAbsolute(targetsOrStates, vars) {
+      return (targetsOrStates instanceof FlipState ? targetsOrStates : new FlipState(targetsOrStates, vars)).makeAbsolute();
+    };
+    Flip2.batch = function batch(id) {
+      id || (id = "default");
+      return _batchLookup[id] || (_batchLookup[id] = new FlipBatch(id));
+    };
+    Flip2.killFlipsOf = function killFlipsOf(targets, complete) {
+      (targets instanceof FlipState ? targets.targets : _toArray2(targets)).forEach(function(t2) {
+        return t2 && _killFlip(t2._flip, complete !== false ? 1 : 2);
+      });
+    };
+    Flip2.isFlipping = function isFlipping(target) {
+      var f = Flip2.getByTarget(target);
+      return !!f && f.isActive();
+    };
+    Flip2.getByTarget = function getByTarget(target) {
+      return (_getEl(target) || _emptyObj)._flip;
+    };
+    Flip2.getElementState = function getElementState(target, props) {
+      return new ElementState(_getEl(target), props);
+    };
+    Flip2.convertCoordinates = function convertCoordinates(fromElement, toElement, point) {
+      var m = getGlobalMatrix(toElement, true, true).multiply(getGlobalMatrix(fromElement));
+      return point ? m.apply(point) : m;
+    };
+    Flip2.register = function register2(core) {
+      _body2 = typeof document !== "undefined" && document.body;
+      if (_body2) {
+        gsap3 = core;
+        _setDoc(_body2);
+        _toArray2 = gsap3.utils.toArray;
+        _getStyleSaver4 = gsap3.core.getStyleSaver;
+        var snap3 = gsap3.utils.snap(0.1);
+        _closestTenth = function _closestTenth2(value, add) {
+          return snap3(parseFloat(value) + add);
+        };
+      }
+    };
+    return Flip2;
+  }();
+  Flip.version = "3.12.5";
+  typeof window !== "undefined" && window.gsap && window.gsap.registerPlugin(Flip);
+
   // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/Observer.js
   function _defineProperties(target, props) {
     for (var i = 0; i < props.length; i++) {
@@ -4542,13 +6095,13 @@
       _defineProperties(Constructor, staticProps);
     return Constructor;
   }
-  var gsap2;
-  var _coreInitted2;
+  var gsap4;
+  var _coreInitted3;
   var _clamp3;
-  var _win3;
-  var _doc3;
+  var _win5;
+  var _doc5;
   var _docEl;
-  var _body;
+  var _body3;
   var _isTouch;
   var _pointerType;
   var ScrollTrigger;
@@ -4556,8 +6109,8 @@
   var _normalizer;
   var _eventTypes;
   var _context2;
-  var _getGSAP = function _getGSAP2() {
-    return gsap2 || typeof window !== "undefined" && (gsap2 = window.gsap) && gsap2.registerPlugin && gsap2;
+  var _getGSAP3 = function _getGSAP4() {
+    return gsap4 || typeof window !== "undefined" && (gsap4 = window.gsap) && gsap4.registerPlugin && gsap4;
   };
   var _startup = 1;
   var _observers = [];
@@ -4600,7 +6153,7 @@
   var _scrollCacheFunc = function _scrollCacheFunc2(f, doNotCache) {
     var cachingFunc = function cachingFunc2(value) {
       if (value || value === 0) {
-        _startup && (_win3.history.scrollRestoration = "manual");
+        _startup && (_win5.history.scrollRestoration = "manual");
         var isNormalizing = _normalizer && _normalizer.isPressed;
         value = cachingFunc2.v = Math.round(value) || (_normalizer && _normalizer.iOS ? 1 : 0);
         f(value);
@@ -4625,7 +6178,7 @@
     d2: "Width",
     a: "x",
     sc: _scrollCacheFunc(function(value) {
-      return arguments.length ? _win3.scrollTo(value, _vertical.sc()) : _win3.pageXOffset || _doc3[_scrollLeft] || _docEl[_scrollLeft] || _body[_scrollLeft] || 0;
+      return arguments.length ? _win5.scrollTo(value, _vertical.sc()) : _win5.pageXOffset || _doc5[_scrollLeft] || _docEl[_scrollLeft] || _body3[_scrollLeft] || 0;
     })
   };
   var _vertical = {
@@ -4639,15 +6192,15 @@
     a: "y",
     op: _horizontal,
     sc: _scrollCacheFunc(function(value) {
-      return arguments.length ? _win3.scrollTo(_horizontal.sc(), value) : _win3.pageYOffset || _doc3[_scrollTop] || _docEl[_scrollTop] || _body[_scrollTop] || 0;
+      return arguments.length ? _win5.scrollTo(_horizontal.sc(), value) : _win5.pageYOffset || _doc5[_scrollTop] || _docEl[_scrollTop] || _body3[_scrollTop] || 0;
     })
   };
   var _getTarget = function _getTarget2(t2, self) {
-    return (self && self._ctx && self._ctx.selector || gsap2.utils.toArray)(t2)[0] || (typeof t2 === "string" && gsap2.config().nullTargetWarn !== false ? console.warn("Element not found:", t2) : null);
+    return (self && self._ctx && self._ctx.selector || gsap4.utils.toArray)(t2)[0] || (typeof t2 === "string" && gsap4.config().nullTargetWarn !== false ? console.warn("Element not found:", t2) : null);
   };
   var _getScrollFunc = function _getScrollFunc2(element, _ref) {
     var s = _ref.s, sc = _ref.sc;
-    _isViewport(element) && (element = _doc3.scrollingElement || _docEl);
+    _isViewport(element) && (element = _doc5.scrollingElement || _docEl);
     var i = _scrollers.indexOf(element), offset = sc === _vertical.sc ? 1 : 2;
     !~i && (i = _scrollers.push(element) - 1);
     _scrollers[i + offset] || _addListener(element, "scroll", _onScroll);
@@ -4655,7 +6208,7 @@
       return arguments.length ? element[s] = value : element[s];
     })));
     func.target = element;
-    prev || (func.smooth = gsap2.getProperty(element, "scrollBehavior") === "smooth");
+    prev || (func.smooth = gsap4.getProperty(element, "scrollBehavior") === "smooth");
     return func;
   };
   var _getVelocityProp = function _getVelocityProp2(value, minTimeRefresh, useDelta) {
@@ -4694,30 +6247,30 @@
     return Math.abs(max) >= Math.abs(min) ? max : min;
   };
   var _setScrollTrigger = function _setScrollTrigger2() {
-    ScrollTrigger = gsap2.core.globals().ScrollTrigger;
+    ScrollTrigger = gsap4.core.globals().ScrollTrigger;
     ScrollTrigger && ScrollTrigger.core && _integrate();
   };
-  var _initCore3 = function _initCore4(core) {
-    gsap2 = core || _getGSAP();
-    if (!_coreInitted2 && gsap2 && typeof document !== "undefined" && document.body) {
-      _win3 = window;
-      _doc3 = document;
-      _docEl = _doc3.documentElement;
-      _body = _doc3.body;
-      _root = [_win3, _doc3, _docEl, _body];
-      _clamp3 = gsap2.utils.clamp;
-      _context2 = gsap2.core.context || function() {
+  var _initCore5 = function _initCore6(core) {
+    gsap4 = core || _getGSAP3();
+    if (!_coreInitted3 && gsap4 && typeof document !== "undefined" && document.body) {
+      _win5 = window;
+      _doc5 = document;
+      _docEl = _doc5.documentElement;
+      _body3 = _doc5.body;
+      _root = [_win5, _doc5, _docEl, _body3];
+      _clamp3 = gsap4.utils.clamp;
+      _context2 = gsap4.core.context || function() {
       };
-      _pointerType = "onpointerenter" in _body ? "pointer" : "mouse";
-      _isTouch = Observer.isTouch = _win3.matchMedia && _win3.matchMedia("(hover: none), (pointer: coarse)").matches ? 1 : "ontouchstart" in _win3 || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0 ? 2 : 0;
+      _pointerType = "onpointerenter" in _body3 ? "pointer" : "mouse";
+      _isTouch = Observer.isTouch = _win5.matchMedia && _win5.matchMedia("(hover: none), (pointer: coarse)").matches ? 1 : "ontouchstart" in _win5 || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0 ? 2 : 0;
       _eventTypes = Observer.eventTypes = ("ontouchstart" in _docEl ? "touchstart,touchmove,touchcancel,touchend" : !("onpointerdown" in _docEl) ? "mousedown,mousemove,mouseup,mouseup" : "pointerdown,pointermove,pointercancel,pointerup").split(",");
       setTimeout(function() {
         return _startup = 0;
       }, 500);
       _setScrollTrigger();
-      _coreInitted2 = 1;
+      _coreInitted3 = 1;
     }
-    return _coreInitted2;
+    return _coreInitted3;
   };
   _horizontal.op = _vertical;
   _scrollers.cache = 0;
@@ -4726,21 +6279,21 @@
       this.init(vars);
     }
     var _proto = Observer2.prototype;
-    _proto.init = function init5(vars) {
-      _coreInitted2 || _initCore3(gsap2) || console.warn("Please gsap.registerPlugin(Observer)");
+    _proto.init = function init6(vars) {
+      _coreInitted3 || _initCore5(gsap4) || console.warn("Please gsap.registerPlugin(Observer)");
       ScrollTrigger || _setScrollTrigger();
       var tolerance = vars.tolerance, dragMinimum = vars.dragMinimum, type = vars.type, target = vars.target, lineHeight = vars.lineHeight, debounce = vars.debounce, preventDefault = vars.preventDefault, onStop = vars.onStop, onStopDelay = vars.onStopDelay, ignore = vars.ignore, wheelSpeed = vars.wheelSpeed, event = vars.event, onDragStart = vars.onDragStart, onDragEnd = vars.onDragEnd, onDrag = vars.onDrag, onPress = vars.onPress, onRelease = vars.onRelease, onRight = vars.onRight, onLeft = vars.onLeft, onUp = vars.onUp, onDown = vars.onDown, onChangeX = vars.onChangeX, onChangeY = vars.onChangeY, onChange = vars.onChange, onToggleX = vars.onToggleX, onToggleY = vars.onToggleY, onHover = vars.onHover, onHoverEnd = vars.onHoverEnd, onMove = vars.onMove, ignoreCheck = vars.ignoreCheck, isNormalizer = vars.isNormalizer, onGestureStart = vars.onGestureStart, onGestureEnd = vars.onGestureEnd, onWheel = vars.onWheel, onEnable = vars.onEnable, onDisable = vars.onDisable, onClick = vars.onClick, scrollSpeed = vars.scrollSpeed, capture = vars.capture, allowClicks = vars.allowClicks, lockAxis = vars.lockAxis, onLockAxis = vars.onLockAxis;
       this.target = target = _getTarget(target) || _docEl;
       this.vars = vars;
-      ignore && (ignore = gsap2.utils.toArray(ignore));
+      ignore && (ignore = gsap4.utils.toArray(ignore));
       tolerance = tolerance || 1e-9;
       dragMinimum = dragMinimum || 0;
       wheelSpeed = wheelSpeed || 1;
       scrollSpeed = scrollSpeed || 1;
       type = type || "wheel,touch,pointer";
       debounce = debounce !== false;
-      lineHeight || (lineHeight = parseFloat(_win3.getComputedStyle(_body).lineHeight) || 22);
-      var id, onStopDelayedCall, dragged, moved, wheeled, locked, axis, self = this, prevDeltaX = 0, prevDeltaY = 0, passive = vars.passive || !preventDefault, scrollFuncX = _getScrollFunc(target, _horizontal), scrollFuncY = _getScrollFunc(target, _vertical), scrollX = scrollFuncX(), scrollY = scrollFuncY(), limitToTouch = ~type.indexOf("touch") && !~type.indexOf("pointer") && _eventTypes[0] === "pointerdown", isViewport = _isViewport(target), ownerDoc = target.ownerDocument || _doc3, deltaX = [0, 0, 0], deltaY = [0, 0, 0], onClickTime = 0, clickCapture = function clickCapture2() {
+      lineHeight || (lineHeight = parseFloat(_win5.getComputedStyle(_body3).lineHeight) || 22);
+      var id, onStopDelayedCall, dragged, moved, wheeled, locked, axis, self = this, prevDeltaX = 0, prevDeltaY = 0, passive = vars.passive || !preventDefault, scrollFuncX = _getScrollFunc(target, _horizontal), scrollFuncY = _getScrollFunc(target, _vertical), scrollX = scrollFuncX(), scrollY = scrollFuncY(), limitToTouch = ~type.indexOf("touch") && !~type.indexOf("pointer") && _eventTypes[0] === "pointerdown", isViewport = _isViewport(target), ownerDoc = target.ownerDocument || _doc5, deltaX = [0, 0, 0], deltaY = [0, 0, 0], onClickTime = 0, clickCapture = function clickCapture2() {
         return onClickTime = _getTime();
       }, _ignoreCheck = function _ignoreCheck2(e2, isPointerOrTouch) {
         return (self.event = e2) && ignore && ~ignore.indexOf(e2.target) || isPointerOrTouch && limitToTouch && e2.pointerType !== "touch" || ignoreCheck && ignoreCheck(e2, isPointerOrTouch);
@@ -4842,13 +6395,13 @@
           self._vx.reset();
           self._vy.reset();
           if (preventDefault && allowClicks) {
-            gsap2.delayedCall(0.08, function() {
+            gsap4.delayedCall(0.08, function() {
               if (_getTime() - onClickTime > 300 && !e2.defaultPrevented) {
                 if (e2.target.click) {
                   e2.target.click();
                 } else if (ownerDoc.createEvent) {
                   var syntheticEvent = ownerDoc.createEvent("MouseEvents");
-                  syntheticEvent.initMouseEvent("click", true, true, _win3, 1, eventData.screenX, eventData.screenY, eventData.clientX, eventData.clientY, false, false, false, false, 0, null);
+                  syntheticEvent.initMouseEvent("click", true, true, _win5, 1, eventData.screenX, eventData.screenY, eventData.clientX, eventData.clientY, false, false, false, false, 0, null);
                   e2.target.dispatchEvent(syntheticEvent);
                 }
               }
@@ -4878,7 +6431,7 @@
         }
         e2 = _getEvent(e2, preventDefault);
         onWheel && (wheeled = true);
-        var multiplier = (e2.deltaMode === 1 ? lineHeight : e2.deltaMode === 2 ? _win3.innerHeight : 1) * wheelSpeed;
+        var multiplier = (e2.deltaMode === 1 ? lineHeight : e2.deltaMode === 2 ? _win5.innerHeight : 1) * wheelSpeed;
         onDelta(e2.deltaX * multiplier, e2.deltaY * multiplier, 0);
         onStop && !isNormalizer && onStopDelayedCall.restart(true);
       }, _onMove = function _onMove2(e2) {
@@ -4900,7 +6453,7 @@
       }, _onClick = function _onClick2(e2) {
         return _ignoreCheck(e2) || _getEvent(e2, preventDefault) && onClick(self);
       };
-      onStopDelayedCall = self._dc = gsap2.delayedCall(onStopDelay || 0.25, onStopFunc).pause();
+      onStopDelayedCall = self._dc = gsap4.delayedCall(onStopDelay || 0.25, onStopFunc).pause();
       self.deltaX = self.deltaY = 0;
       self._vx = _getVelocityProp(0, 50, true);
       self._vy = _getVelocityProp(0, 50, true);
@@ -4984,7 +6537,7 @@
   Observer.create = function(vars) {
     return new Observer(vars);
   };
-  Observer.register = _initCore3;
+  Observer.register = _initCore5;
   Observer.getAll = function() {
     return _observers.slice();
   };
@@ -4993,24 +6546,24 @@
       return o.vars.id === id;
     })[0];
   };
-  _getGSAP() && gsap2.registerPlugin(Observer);
+  _getGSAP3() && gsap4.registerPlugin(Observer);
 
   // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/ScrollTrigger.js
-  var gsap3;
-  var _coreInitted3;
-  var _win4;
-  var _doc4;
+  var gsap5;
+  var _coreInitted4;
+  var _win6;
+  var _doc6;
   var _docEl2;
-  var _body2;
+  var _body4;
   var _root2;
   var _resizeDelay;
-  var _toArray;
+  var _toArray3;
   var _clamp4;
   var _time2;
   var _syncInterval;
   var _refreshing;
   var _pointerIsDown;
-  var _transformProp2;
+  var _transformProp3;
   var _i;
   var _prevWidth;
   var _prevHeight;
@@ -5055,24 +6608,24 @@
   var _passThrough3 = function _passThrough4(v) {
     return v;
   };
-  var _round3 = function _round4(value) {
+  var _round7 = function _round8(value) {
     return Math.round(value * 1e5) / 1e5 || 0;
   };
-  var _windowExists5 = function _windowExists6() {
+  var _windowExists7 = function _windowExists8() {
     return typeof window !== "undefined";
   };
-  var _getGSAP3 = function _getGSAP4() {
-    return gsap3 || _windowExists5() && (gsap3 = window.gsap) && gsap3.registerPlugin && gsap3;
+  var _getGSAP5 = function _getGSAP6() {
+    return gsap5 || _windowExists7() && (gsap5 = window.gsap) && gsap5.registerPlugin && gsap5;
   };
   var _isViewport3 = function _isViewport4(e2) {
     return !!~_root2.indexOf(e2);
   };
   var _getViewportDimension = function _getViewportDimension2(dimensionProperty) {
-    return (dimensionProperty === "Height" ? _100vh : _win4["inner" + dimensionProperty]) || _docEl2["client" + dimensionProperty] || _body2["client" + dimensionProperty];
+    return (dimensionProperty === "Height" ? _100vh : _win6["inner" + dimensionProperty]) || _docEl2["client" + dimensionProperty] || _body4["client" + dimensionProperty];
   };
   var _getBoundsFunc = function _getBoundsFunc2(element) {
     return _getProxyProp(element, "getBoundingClientRect") || (_isViewport3(element) ? function() {
-      _winOffsets.width = _win4.innerWidth;
+      _winOffsets.width = _win6.innerWidth;
       _winOffsets.height = _100vh;
       return _winOffsets;
     } : function() {
@@ -5094,7 +6647,7 @@
   };
   var _maxScroll = function _maxScroll2(element, _ref2) {
     var s = _ref2.s, d2 = _ref2.d2, d = _ref2.d, a = _ref2.a;
-    return Math.max(0, (s = "scroll" + d2) && (a = _getProxyProp(element, s)) ? a() - _getBoundsFunc(element)()[d] : _isViewport3(element) ? (_docEl2[s] || _body2[s]) - _getViewportDimension(d2) : element[s] - element["offset" + d2]);
+    return Math.max(0, (s = "scroll" + d2) && (a = _getProxyProp(element, s)) ? a() - _getBoundsFunc(element)()[d] : _isViewport3(element) ? (_docEl2[s] || _body4[s]) - _getViewportDimension(d2) : element[s] - element["offset" + d2]);
   };
   var _iterateAutoRefresh = function _iterateAutoRefresh2(func, events) {
     for (var i = 0; i < _autoRefresh.length; i += 3) {
@@ -5141,7 +6694,7 @@
   var _Height = "Height";
   var _px = "px";
   var _getComputedStyle = function _getComputedStyle2(element) {
-    return _win4.getComputedStyle(element);
+    return _win6.getComputedStyle(element);
   };
   var _makePositionable = function _makePositionable2(element) {
     var position = _getComputedStyle(element).position;
@@ -5154,7 +6707,7 @@
     return obj;
   };
   var _getBounds = function _getBounds2(element, withoutTransforms) {
-    var tween = withoutTransforms && _getComputedStyle(element)[_transformProp2] !== "matrix(1, 0, 0, 1, 0, 0)" && gsap3.to(element, {
+    var tween = withoutTransforms && _getComputedStyle(element)[_transformProp3] !== "matrix(1, 0, 0, 1, 0, 0)" && gsap5.to(element, {
       x: 0,
       y: 0,
       xPercent: 0,
@@ -5182,11 +6735,11 @@
   };
   var _getClosestLabel = function _getClosestLabel2(animation) {
     return function(value) {
-      return gsap3.utils.snap(_getLabelRatioArray(animation), value);
+      return gsap5.utils.snap(_getLabelRatioArray(animation), value);
     };
   };
   var _snapDirectional = function _snapDirectional2(snapIncrementOrArray) {
-    var snap3 = gsap3.utils.snap(snapIncrementOrArray), a = Array.isArray(snapIncrementOrArray) && snapIncrementOrArray.slice(0).sort(function(a2, b) {
+    var snap3 = gsap5.utils.snap(snapIncrementOrArray), a = Array.isArray(snapIncrementOrArray) && snapIncrementOrArray.slice(0).sort(function(a2, b) {
       return a2 - b;
     });
     return a ? function(value, direction, threshold) {
@@ -5280,7 +6833,7 @@
   };
   var _createMarker = function _createMarker2(type, name, container, direction, _ref4, offset, matchWidthEl, containerAnimation) {
     var startColor = _ref4.startColor, endColor = _ref4.endColor, fontSize = _ref4.fontSize, indent = _ref4.indent, fontWeight = _ref4.fontWeight;
-    var e2 = _doc4.createElement("div"), useFixedPosition = _isViewport3(container) || _getProxyProp(container, "pinType") === "fixed", isScroller = type.indexOf("scroller") !== -1, parent = useFixedPosition ? _body2 : container, isStart = type.indexOf("start") !== -1, color = isStart ? startColor : endColor, css = "border-color:" + color + ";font-size:" + fontSize + ";color:" + color + ";font-weight:" + fontWeight + ";pointer-events:none;white-space:nowrap;font-family:sans-serif,Arial;z-index:1000;padding:4px 8px;border-width:0;border-style:solid;";
+    var e2 = _doc6.createElement("div"), useFixedPosition = _isViewport3(container) || _getProxyProp(container, "pinType") === "fixed", isScroller = type.indexOf("scroller") !== -1, parent = useFixedPosition ? _body4 : container, isStart = type.indexOf("start") !== -1, color = isStart ? startColor : endColor, css = "border-color:" + color + ";font-size:" + fontSize + ";color:" + color + ";font-weight:" + fontWeight + ";pointer-events:none;white-space:nowrap;font-family:sans-serif,Arial;z-index:1000;padding:4px 8px;border-width:0;border-style:solid;";
     css += "position:" + ((isScroller || containerAnimation) && useFixedPosition ? "fixed;" : "absolute;");
     (isScroller || containerAnimation || !useFixedPosition) && (css += (direction === _vertical ? _right : _bottom) + ":" + (offset + parseFloat(indent)) + "px;");
     matchWidthEl && (css += "box-sizing:border-box;text-align:left;width:" + matchWidthEl.offsetWidth + "px;");
@@ -5303,7 +6856,7 @@
     vars["border" + side + _Width] = 1;
     vars["border" + oppositeSide + _Width] = 0;
     vars[direction.p] = start + "px";
-    gsap3.set(marker, vars);
+    gsap5.set(marker, vars);
   };
   var _triggers = [];
   var _ids = {};
@@ -5312,7 +6865,7 @@
     return _getTime2() - _lastScrollTime > 34 && (_rafID || (_rafID = requestAnimationFrame(_updateAll)));
   };
   var _onScroll3 = function _onScroll4() {
-    if (!_normalizer2 || !_normalizer2.isPressed || _normalizer2.startX > _body2.clientWidth) {
+    if (!_normalizer2 || !_normalizer2.isPressed || _normalizer2.startX > _body4.clientWidth) {
       _scrollers.cache++;
       if (_normalizer2) {
         _rafID || (_rafID = requestAnimationFrame(_updateAll));
@@ -5324,12 +6877,12 @@
     }
   };
   var _setBaseDimensions = function _setBaseDimensions2() {
-    _baseScreenWidth = _win4.innerWidth;
-    _baseScreenHeight = _win4.innerHeight;
+    _baseScreenWidth = _win6.innerWidth;
+    _baseScreenHeight = _win6.innerHeight;
   };
   var _onResize = function _onResize2() {
     _scrollers.cache++;
-    !_refreshing && !_ignoreResize && !_doc4.fullscreenElement && !_doc4.webkitFullscreenElement && (!_ignoreMobileResize || _baseScreenWidth !== _win4.innerWidth || Math.abs(_win4.innerHeight - _baseScreenHeight) > _win4.innerHeight * 0.25) && _resizeDelay.restart(true);
+    !_refreshing && !_ignoreResize && !_doc6.fullscreenElement && !_doc6.webkitFullscreenElement && (!_ignoreMobileResize || _baseScreenWidth !== _win6.innerWidth || Math.abs(_win6.innerHeight - _baseScreenHeight) > _win6.innerHeight * 0.25) && _resizeDelay.restart(true);
   };
   var _listeners2 = {};
   var _emptyArray2 = [];
@@ -5372,7 +6925,7 @@
     (force || !_refreshingAll) && _scrollers.forEach(function(obj) {
       return _isFunction3(obj) && obj.cacheID++ && (obj.rec = 0);
     });
-    _isString3(scrollRestoration) && (_win4.history.scrollRestoration = _scrollRestoration = scrollRestoration);
+    _isString3(scrollRestoration) && (_win6.history.scrollRestoration = _scrollRestoration = scrollRestoration);
   };
   var _refreshingAll;
   var _refreshID = 0;
@@ -5386,12 +6939,12 @@
     }
   };
   var _refresh100vh = function _refresh100vh2() {
-    _body2.appendChild(_div100vh);
-    _100vh = !_normalizer2 && _div100vh.offsetHeight || _win4.innerHeight;
-    _body2.removeChild(_div100vh);
+    _body4.appendChild(_div100vh);
+    _100vh = !_normalizer2 && _div100vh.offsetHeight || _win6.innerHeight;
+    _body4.removeChild(_div100vh);
   };
   var _hideAllMarkers = function _hideAllMarkers2(hide) {
-    return _toArray(".gsap-marker-start, .gsap-marker-end, .gsap-marker-scroller-start, .gsap-marker-scroller-end").forEach(function(el) {
+    return _toArray3(".gsap-marker-start, .gsap-marker-end, .gsap-marker-scroller-start, .gsap-marker-scroller-end").forEach(function(el) {
       return el.style.display = hide ? "none" : "block";
     });
   };
@@ -5536,7 +7089,7 @@
   var _setState = function _setState2(state) {
     if (state) {
       var style = state.t.style, l = state.length, i = 0, p, value;
-      (state.t._gsap || gsap3.core.getCache(state.t)).uncache = 1;
+      (state.t._gsap || gsap5.core.getCache(state.t)).uncache = 1;
       for (; i < l; i += 2) {
         value = state[i + 1];
         p = state[i];
@@ -5580,7 +7133,7 @@
     if (!_isNumber3(value)) {
       _isFunction3(trigger) && (trigger = trigger(self));
       var offsets = (value || "0").split(" "), bounds, localOffset, globalOffset, display;
-      element = _getTarget(trigger, self) || _body2;
+      element = _getTarget(trigger, self) || _body4;
       bounds = _getBounds(element) || {};
       if ((!bounds || !bounds.left && !bounds.top) && _getComputedStyle(element).display === "none") {
         display = element.style.display;
@@ -5594,7 +7147,7 @@
       markerScroller && _positionMarker(markerScroller, globalOffset, direction, scrollerSize - globalOffset < 20 || markerScroller._isStart && globalOffset > 20);
       scrollerSize -= scrollerSize - globalOffset;
     } else {
-      containerAnimation && (value = gsap3.utils.mapRange(containerAnimation.scrollTrigger.start, containerAnimation.scrollTrigger.end, 0, scrollerMax, value));
+      containerAnimation && (value = gsap5.utils.mapRange(containerAnimation.scrollTrigger.start, containerAnimation.scrollTrigger.end, 0, scrollerMax, value));
       markerScroller && _positionMarker(markerScroller, scrollerSize, direction, true);
     }
     if (clampZeroProp) {
@@ -5604,7 +7157,7 @@
     if (marker) {
       var position = value + scrollerSize, isStart = marker._isStart;
       p1 = "scroll" + direction.d2;
-      _positionMarker(marker, position, direction, isStart && position > 20 || !isStart && (useFixedPosition ? Math.max(_body2[p1], _docEl2[p1]) : marker.parentNode[p1]) <= position + 1);
+      _positionMarker(marker, position, direction, isStart && position > 20 || !isStart && (useFixedPosition ? Math.max(_body4[p1], _docEl2[p1]) : marker.parentNode[p1]) <= position + 1);
       if (useFixedPosition) {
         scrollerBounds = _getBounds(markerScroller);
         useFixedPosition && (marker.style[direction.op.p] = scrollerBounds[direction.op.p] - direction.op.m - marker._offset + _px);
@@ -5624,7 +7177,7 @@
   var _reparent = function _reparent2(element, parent, top, left) {
     if (element.parentNode !== parent) {
       var style = element.style, p, cs;
-      if (parent === _body2) {
+      if (parent === _body4) {
         element._stOrig = style.cssText;
         cs = _getComputedStyle(element);
         for (p in cs) {
@@ -5637,7 +7190,7 @@
       } else {
         style.cssText = element._stOrig;
       }
-      gsap3.core.getCache(element).uncache = 1;
+      gsap5.core.getCache(element).uncache = 1;
       parent.appendChild(element);
     }
   };
@@ -5657,7 +7210,7 @@
   var _shiftMarker = function _shiftMarker2(marker, direction, value) {
     var vars = {};
     vars[direction.p] = "+=" + value;
-    gsap3.set(marker, vars);
+    gsap5.set(marker, vars);
   };
   var _getTweenCreator = function _getTweenCreator2(scroller, direction) {
     var getScroll = _getScrollFunc(scroller, direction), prop = "_scroll" + direction.p2, getTween = function getTween2(scrollTo, vars, initialValue, change1, change2) {
@@ -5684,7 +7237,7 @@
         getTween2.tween = 0;
         onComplete && onComplete.call(tween);
       };
-      tween = getTween2.tween = gsap3.to(scroller, vars);
+      tween = getTween2.tween = gsap5.to(scroller, vars);
       return tween;
     };
     scroller[prop] = getScroll;
@@ -5697,12 +7250,12 @@
   };
   var ScrollTrigger2 = /* @__PURE__ */ function() {
     function ScrollTrigger3(vars, animation) {
-      _coreInitted3 || ScrollTrigger3.register(gsap3) || console.warn("Please gsap.registerPlugin(ScrollTrigger)");
+      _coreInitted4 || ScrollTrigger3.register(gsap5) || console.warn("Please gsap.registerPlugin(ScrollTrigger)");
       _context3(this);
       this.init(vars, animation);
     }
     var _proto = ScrollTrigger3.prototype;
-    _proto.init = function init5(vars, animation) {
+    _proto.init = function init6(vars, animation) {
       this.progress = this.start = 0;
       this.vars && this.kill(true, true);
       if (!_enabled) {
@@ -5712,7 +7265,7 @@
       vars = _setDefaults3(_isString3(vars) || _isNumber3(vars) || vars.nodeType ? {
         trigger: vars
       } : vars, _defaults2);
-      var _vars = vars, onUpdate = _vars.onUpdate, toggleClass = _vars.toggleClass, id = _vars.id, onToggle = _vars.onToggle, onRefresh = _vars.onRefresh, scrub = _vars.scrub, trigger = _vars.trigger, pin = _vars.pin, pinSpacing = _vars.pinSpacing, invalidateOnRefresh = _vars.invalidateOnRefresh, anticipatePin = _vars.anticipatePin, onScrubComplete = _vars.onScrubComplete, onSnapComplete = _vars.onSnapComplete, once = _vars.once, snap3 = _vars.snap, pinReparent = _vars.pinReparent, pinSpacer = _vars.pinSpacer, containerAnimation = _vars.containerAnimation, fastScrollEnd = _vars.fastScrollEnd, preventOverlaps = _vars.preventOverlaps, direction = vars.horizontal || vars.containerAnimation && vars.horizontal !== false ? _horizontal : _vertical, isToggle = !scrub && scrub !== 0, scroller = _getTarget(vars.scroller || _win4), scrollerCache = gsap3.core.getCache(scroller), isViewport = _isViewport3(scroller), useFixedPosition = ("pinType" in vars ? vars.pinType : _getProxyProp(scroller, "pinType") || isViewport && "fixed") === "fixed", callbacks = [vars.onEnter, vars.onLeave, vars.onEnterBack, vars.onLeaveBack], toggleActions = isToggle && vars.toggleActions.split(" "), markers = "markers" in vars ? vars.markers : _defaults2.markers, borderWidth = isViewport ? 0 : parseFloat(_getComputedStyle(scroller)["border" + direction.p2 + _Width]) || 0, self = this, onRefreshInit = vars.onRefreshInit && function() {
+      var _vars = vars, onUpdate = _vars.onUpdate, toggleClass = _vars.toggleClass, id = _vars.id, onToggle = _vars.onToggle, onRefresh = _vars.onRefresh, scrub = _vars.scrub, trigger = _vars.trigger, pin = _vars.pin, pinSpacing = _vars.pinSpacing, invalidateOnRefresh = _vars.invalidateOnRefresh, anticipatePin = _vars.anticipatePin, onScrubComplete = _vars.onScrubComplete, onSnapComplete = _vars.onSnapComplete, once = _vars.once, snap3 = _vars.snap, pinReparent = _vars.pinReparent, pinSpacer = _vars.pinSpacer, containerAnimation = _vars.containerAnimation, fastScrollEnd = _vars.fastScrollEnd, preventOverlaps = _vars.preventOverlaps, direction = vars.horizontal || vars.containerAnimation && vars.horizontal !== false ? _horizontal : _vertical, isToggle = !scrub && scrub !== 0, scroller = _getTarget(vars.scroller || _win6), scrollerCache = gsap5.core.getCache(scroller), isViewport = _isViewport3(scroller), useFixedPosition = ("pinType" in vars ? vars.pinType : _getProxyProp(scroller, "pinType") || isViewport && "fixed") === "fixed", callbacks = [vars.onEnter, vars.onLeave, vars.onEnterBack, vars.onLeaveBack], toggleActions = isToggle && vars.toggleActions.split(" "), markers = "markers" in vars ? vars.markers : _defaults2.markers, borderWidth = isViewport ? 0 : parseFloat(_getComputedStyle(scroller)["border" + direction.p2 + _Width]) || 0, self = this, onRefreshInit = vars.onRefreshInit && function() {
         return vars.onRefreshInit(self);
       }, getScrollerSize = _getSizeFunc(scroller, isViewport, direction), getScrollerOffsets = _getOffsetsFunc(scroller, isViewport), lastSnap = 0, lastRefresh = 0, prevProgress = 0, scrollFunc = _getScrollFunc(scroller, direction), tweenTo, pinCache, snapFunc, scroll1, scroll2, start, end, markerStart, markerEnd, markerStartTrigger, markerEndTrigger, markerVars, executingOnRefresh, change, pinOriginalState, pinActiveState, pinState, spacer, offset, pinGetter, pinSetter, pinStart, pinChange, spacingStart, spacerState, markerStartSetter, pinMoves, markerEndSetter, cs, snap1, snap22, scrubTween, scrubSmooth, snapDurClamp, snapDelayedCall, prevScroll, prevAnimProgress, caMarkerSetter, customRevertReturn;
       self._startClamp = self._endClamp = false;
@@ -5738,7 +7291,7 @@
           scrubTween && scrubTween.progress(1).kill();
           scrubTween = 0;
         } else {
-          scrubTween ? scrubTween.duration(value) : scrubTween = gsap3.to(animation, {
+          scrubTween ? scrubTween.duration(value) : scrubTween = gsap5.to(animation, {
             ease: "expo",
             totalProgress: "+=0",
             inherit: false,
@@ -5765,24 +7318,24 @@
             snapTo: snap3
           };
         }
-        "scrollBehavior" in _body2.style && gsap3.set(isViewport ? [_body2, _docEl2] : scroller, {
+        "scrollBehavior" in _body4.style && gsap5.set(isViewport ? [_body4, _docEl2] : scroller, {
           scrollBehavior: "auto"
         });
         _scrollers.forEach(function(o) {
-          return _isFunction3(o) && o.target === (isViewport ? _doc4.scrollingElement || _docEl2 : scroller) && (o.smooth = false);
+          return _isFunction3(o) && o.target === (isViewport ? _doc6.scrollingElement || _docEl2 : scroller) && (o.smooth = false);
         });
         snapFunc = _isFunction3(snap3.snapTo) ? snap3.snapTo : snap3.snapTo === "labels" ? _getClosestLabel(animation) : snap3.snapTo === "labelsDirectional" ? _getLabelAtDirection(animation) : snap3.directional !== false ? function(value, st) {
           return _snapDirectional(snap3.snapTo)(value, _getTime2() - lastRefresh < 500 ? 0 : st.direction);
-        } : gsap3.utils.snap(snap3.snapTo);
+        } : gsap5.utils.snap(snap3.snapTo);
         snapDurClamp = snap3.duration || {
           min: 0.1,
           max: 2
         };
         snapDurClamp = _isObject3(snapDurClamp) ? _clamp4(snapDurClamp.min, snapDurClamp.max) : _clamp4(snapDurClamp, snapDurClamp);
-        snapDelayedCall = gsap3.delayedCall(snap3.delay || scrubSmooth / 2 || 0.1, function() {
+        snapDelayedCall = gsap5.delayedCall(snap3.delay || scrubSmooth / 2 || 0.1, function() {
           var scroll = scrollFunc(), refreshedRecently = _getTime2() - lastRefresh < 500, tween = tweenTo.tween;
           if ((refreshedRecently || Math.abs(self.getVelocity()) < 10) && !tween && !_pointerIsDown && lastSnap !== scroll) {
-            var progress = (scroll - start) / change, totalProgress = animation && !isToggle ? animation.totalProgress() : progress, velocity = refreshedRecently ? 0 : (totalProgress - snap22) / (_getTime2() - _time2) * 1e3 || 0, change1 = gsap3.utils.clamp(-progress, 1 - progress, _abs(velocity / 2) * velocity / 0.185), naturalEnd = progress + (snap3.inertia === false ? 0 : change1), endValue, endScroll, _snap = snap3, onStart = _snap.onStart, _onInterrupt = _snap.onInterrupt, _onComplete = _snap.onComplete;
+            var progress = (scroll - start) / change, totalProgress = animation && !isToggle ? animation.totalProgress() : progress, velocity = refreshedRecently ? 0 : (totalProgress - snap22) / (_getTime2() - _time2) * 1e3 || 0, change1 = gsap5.utils.clamp(-progress, 1 - progress, _abs(velocity / 2) * velocity / 0.185), naturalEnd = progress + (snap3.inertia === false ? 0 : change1), endValue, endScroll, _snap = snap3, onStart = _snap.onStart, _onInterrupt = _snap.onInterrupt, _onComplete = _snap.onComplete;
             endValue = snapFunc(naturalEnd, self);
             _isNumber3(endValue) || (endValue = naturalEnd);
             endScroll = Math.round(start + endValue * change);
@@ -5831,7 +7384,7 @@
       if (pin) {
         pinSpacing === false || pinSpacing === _margin || (pinSpacing = !pinSpacing && pin.parentNode && pin.parentNode.style && _getComputedStyle(pin.parentNode).display === "flex" ? false : _padding);
         self.pin = pin;
-        pinCache = gsap3.core.getCache(pin);
+        pinCache = gsap5.core.getCache(pin);
         if (!pinCache.spacer) {
           if (pinSpacer) {
             pinSpacer = _getTarget(pinSpacer);
@@ -5839,21 +7392,21 @@
             pinCache.spacerIsNative = !!pinSpacer;
             pinSpacer && (pinCache.spacerState = _getState(pinSpacer));
           }
-          pinCache.spacer = spacer = pinSpacer || _doc4.createElement("div");
+          pinCache.spacer = spacer = pinSpacer || _doc6.createElement("div");
           spacer.classList.add("pin-spacer");
           id && spacer.classList.add("pin-spacer-" + id);
           pinCache.pinState = pinOriginalState = _getState(pin);
         } else {
           pinOriginalState = pinCache.pinState;
         }
-        vars.force3D !== false && gsap3.set(pin, {
+        vars.force3D !== false && gsap5.set(pin, {
           force3D: true
         });
         self.spacer = spacer = pinCache.spacer;
         cs = _getComputedStyle(pin);
         spacingStart = cs[pinSpacing + direction.os2];
-        pinGetter = gsap3.getProperty(pin);
-        pinSetter = gsap3.quickSetter(pin, direction.a, _px);
+        pinGetter = gsap5.getProperty(pin);
+        pinSetter = gsap5.quickSetter(pin, direction.a, _px);
         _swapPinIn(pin, spacer, cs);
         pinState = _getState(pin);
       }
@@ -5865,14 +7418,14 @@
         var content = _getTarget(_getProxyProp(scroller, "content") || scroller);
         markerStart = this.markerStart = _createMarker("start", id, content, direction, markerVars, offset, 0, containerAnimation);
         markerEnd = this.markerEnd = _createMarker("end", id, content, direction, markerVars, offset, 0, containerAnimation);
-        containerAnimation && (caMarkerSetter = gsap3.quickSetter([markerStart, markerEnd], direction.a, _px));
+        containerAnimation && (caMarkerSetter = gsap5.quickSetter([markerStart, markerEnd], direction.a, _px));
         if (!useFixedPosition && !(_proxies.length && _getProxyProp(scroller, "fixedMarkers") === true)) {
-          _makePositionable(isViewport ? _body2 : scroller);
-          gsap3.set([markerStartTrigger, markerEndTrigger], {
+          _makePositionable(isViewport ? _body4 : scroller);
+          gsap5.set([markerStartTrigger, markerEndTrigger], {
             force3D: true
           });
-          markerStartSetter = gsap3.quickSetter(markerStartTrigger, direction.a, _px);
-          markerEndSetter = gsap3.quickSetter(markerEndTrigger, direction.a, _px);
+          markerStartSetter = gsap5.quickSetter(markerStartTrigger, direction.a, _px);
+          markerEndSetter = gsap5.quickSetter(markerEndTrigger, direction.a, _px);
         }
       }
       if (containerAnimation) {
@@ -5940,8 +7493,8 @@
         self._subPinOffset = false;
         var size = getScrollerSize(), scrollerBounds = getScrollerOffsets(), max = containerAnimation ? containerAnimation.duration() : _maxScroll(scroller, direction), isFirstRefresh = change <= 0.01, offset2 = 0, otherPinOffset = pinOffset || 0, parsedEnd = _isObject3(position) ? position.end : vars.end, parsedEndTrigger = vars.endTrigger || trigger, parsedStart = _isObject3(position) ? position.start : vars.start || (vars.start === 0 || !trigger ? 0 : pin ? "0 0" : "0 100%"), pinnedContainer = self.pinnedContainer = vars.pinnedContainer && _getTarget(vars.pinnedContainer, self), triggerIndex = trigger && Math.max(0, _triggers.indexOf(self)) || 0, i = triggerIndex, cs2, bounds, scroll, isVertical, override, curTrigger, curPin, oppositeScroll, initted, revertedPins, forcedOverflow, markerStartOffset, markerEndOffset;
         if (markers && _isObject3(position)) {
-          markerStartOffset = gsap3.getProperty(markerStartTrigger, direction.p);
-          markerEndOffset = gsap3.getProperty(markerEndTrigger, direction.p);
+          markerStartOffset = gsap5.getProperty(markerStartTrigger, direction.p);
+          markerEndOffset = gsap5.getProperty(markerEndTrigger, direction.p);
         }
         while (i--) {
           curTrigger = _triggers[i];
@@ -5966,7 +7519,7 @@
             parsedEnd = (_isString3(parsedStart) ? parsedStart.split(" ")[0] : "") + parsedEnd;
           } else {
             offset2 = _offsetToPx(parsedEnd.substr(2), size);
-            parsedEnd = _isString3(parsedStart) ? parsedStart : (containerAnimation ? gsap3.utils.mapRange(0, containerAnimation.duration(), containerAnimation.scrollTrigger.start, containerAnimation.scrollTrigger.end, start) : start) + offset2;
+            parsedEnd = _isString3(parsedStart) ? parsedStart : (containerAnimation ? gsap5.utils.mapRange(0, containerAnimation.duration(), containerAnimation.scrollTrigger.start, containerAnimation.scrollTrigger.end, start) : start) + offset2;
             parsedEndTrigger = trigger;
           }
         }
@@ -5994,14 +7547,14 @@
         }
         change = end - start || (start -= 0.01) && 1e-3;
         if (isFirstRefresh) {
-          prevProgress = gsap3.utils.clamp(0, 1, gsap3.utils.normalize(start, end, prevScroll));
+          prevProgress = gsap5.utils.clamp(0, 1, gsap5.utils.normalize(start, end, prevScroll));
         }
         self._pinPush = otherPinOffset;
         if (markerStart && offset2) {
           cs2 = {};
           cs2[direction.a] = "+=" + offset2;
           pinnedContainer && (cs2[direction.p] = "-=" + scrollFunc());
-          gsap3.set([markerStart, markerEnd], cs2);
+          gsap5.set([markerStart, markerEnd], cs2);
         }
         if (pin && !(_clampingMax && self.end >= _maxScroll(scroller, direction))) {
           cs2 = _getComputedStyle(pin);
@@ -6009,12 +7562,12 @@
           scroll = scrollFunc();
           pinStart = parseFloat(pinGetter(direction.a)) + otherPinOffset;
           if (!max && end > 1) {
-            forcedOverflow = (isViewport ? _doc4.scrollingElement || _docEl2 : scroller).style;
+            forcedOverflow = (isViewport ? _doc6.scrollingElement || _docEl2 : scroller).style;
             forcedOverflow = {
               style: forcedOverflow,
               value: forcedOverflow["overflow" + direction.a.toUpperCase()]
             };
-            if (isViewport && _getComputedStyle(_body2)["overflow" + direction.a.toUpperCase()] !== "scroll") {
+            if (isViewport && _getComputedStyle(_body4)["overflow" + direction.a.toUpperCase()] !== "scroll") {
               forcedOverflow.style["overflow" + direction.a.toUpperCase()] = "scroll";
             }
           }
@@ -6078,7 +7631,7 @@
           forcedOverflow && (forcedOverflow.value ? forcedOverflow.style["overflow" + direction.a.toUpperCase()] = forcedOverflow.value : forcedOverflow.style.removeProperty("overflow-" + direction.a));
         } else if (trigger && scrollFunc() && !containerAnimation) {
           bounds = trigger.parentNode;
-          while (bounds && bounds !== _body2) {
+          while (bounds && bounds !== _body4) {
             if (bounds._pinOffset) {
               start -= bounds._pinOffset;
               end -= bounds._pinOffset;
@@ -6105,14 +7658,14 @@
         _refreshing = 0;
         animation && isToggle && (animation._initted || prevAnimProgress) && animation.progress() !== prevAnimProgress && animation.progress(prevAnimProgress || 0, true).render(animation.time(), true, true);
         if (isFirstRefresh || prevProgress !== self.progress || containerAnimation || invalidateOnRefresh) {
-          animation && !isToggle && animation.totalProgress(containerAnimation && start < -1e-3 && !prevProgress ? gsap3.utils.normalize(start, end, 0) : prevProgress, true);
+          animation && !isToggle && animation.totalProgress(containerAnimation && start < -1e-3 && !prevProgress ? gsap5.utils.normalize(start, end, 0) : prevProgress, true);
           self.progress = isFirstRefresh || (scroll1 - start) / change === prevProgress ? 0 : prevProgress;
         }
         pin && pinSpacing && (spacer._pinOffset = Math.round(self.progress * pinChange));
         scrubTween && scrubTween.invalidate();
         if (!isNaN(markerStartOffset)) {
-          markerStartOffset -= gsap3.getProperty(markerStartTrigger, direction.p);
-          markerEndOffset -= gsap3.getProperty(markerEndTrigger, direction.p);
+          markerStartOffset -= gsap5.getProperty(markerStartTrigger, direction.p);
+          markerEndOffset -= gsap5.getProperty(markerEndTrigger, direction.p);
           _shiftMarker(markerStartTrigger, direction, markerStartOffset);
           _shiftMarker(markerStart, direction, markerStartOffset - (pinOffset || 0));
           _shiftMarker(markerEndTrigger, direction, markerEndOffset);
@@ -6198,13 +7751,13 @@
           if (pin) {
             reset && pinSpacing && (spacer.style[pinSpacing + direction.os2] = spacingStart);
             if (!useFixedPosition) {
-              pinSetter(_round3(pinStart + pinChange * clipped));
+              pinSetter(_round7(pinStart + pinChange * clipped));
             } else if (stateChanged) {
               isAtMax = !reset && clipped > prevProgress2 && end + 1 > scroll && scroll + 1 >= _maxScroll(scroller, direction);
               if (pinReparent) {
                 if (!reset && (isActive || isAtMax)) {
                   var bounds = _getBounds(pin, true), _offset = scroll - start;
-                  _reparent(pin, _body2, bounds.top + (direction === _vertical ? _offset : 0) + _px, bounds.left + (direction === _vertical ? 0 : _offset) + _px);
+                  _reparent(pin, _body4, bounds.top + (direction === _vertical ? _offset : 0) + _px, bounds.left + (direction === _vertical ? 0 : _offset) + _px);
                 } else {
                   _reparent(pin, spacer);
                 }
@@ -6214,7 +7767,7 @@
             }
           }
           snap3 && !tweenTo.tween && !_refreshing && !_startup2 && snapDelayedCall.restart(true);
-          toggleClass && (toggled || once && clipped && (clipped < 1 || !_limitCallbacks)) && _toArray(toggleClass.targets).forEach(function(el) {
+          toggleClass && (toggled || once && clipped && (clipped < 1 || !_limitCallbacks)) && _toArray3(toggleClass.targets).forEach(function(el) {
             return el.classList[isActive || once ? "add" : "remove"](toggleClass.className);
           });
           onUpdate && !isToggle && !reset && onUpdate(self);
@@ -6359,7 +7912,7 @@
           self.update = updateFunc;
           start || end || self.refresh();
         };
-        gsap3.delayedCall(0.01, self.update);
+        gsap5.delayedCall(0.01, self.update);
         change = 0.01;
         start = end = 0;
       } else {
@@ -6367,13 +7920,13 @@
       }
       pin && _queueRefreshAll();
     };
-    ScrollTrigger3.register = function register(core) {
-      if (!_coreInitted3) {
-        gsap3 = core || _getGSAP3();
-        _windowExists5() && window.document && ScrollTrigger3.enable();
-        _coreInitted3 = _enabled;
+    ScrollTrigger3.register = function register2(core) {
+      if (!_coreInitted4) {
+        gsap5 = core || _getGSAP5();
+        _windowExists7() && window.document && ScrollTrigger3.enable();
+        _coreInitted4 = _enabled;
       }
-      return _coreInitted3;
+      return _coreInitted4;
     };
     ScrollTrigger3.defaults = function defaults2(config3) {
       if (config3) {
@@ -6388,13 +7941,13 @@
       _triggers.forEach(function(trigger) {
         return trigger[kill ? "kill" : "disable"](reset);
       });
-      _removeListener3(_win4, "wheel", _onScroll3);
-      _removeListener3(_doc4, "scroll", _onScroll3);
+      _removeListener3(_win6, "wheel", _onScroll3);
+      _removeListener3(_doc6, "scroll", _onScroll3);
       clearInterval(_syncInterval);
-      _removeListener3(_doc4, "touchcancel", _passThrough3);
-      _removeListener3(_body2, "touchstart", _passThrough3);
-      _multiListener(_removeListener3, _doc4, "pointerdown,touchstart,mousedown", _pointerDownHandler);
-      _multiListener(_removeListener3, _doc4, "pointerup,touchend,mouseup", _pointerUpHandler);
+      _removeListener3(_doc6, "touchcancel", _passThrough3);
+      _removeListener3(_body4, "touchstart", _passThrough3);
+      _multiListener(_removeListener3, _doc6, "pointerdown,touchstart,mousedown", _pointerDownHandler);
+      _multiListener(_removeListener3, _doc6, "pointerup,touchend,mouseup", _pointerUpHandler);
       _resizeDelay.kill();
       _iterateAutoRefresh(_removeListener3);
       for (var i = 0; i < _scrollers.length; i += 3) {
@@ -6403,50 +7956,50 @@
       }
     };
     ScrollTrigger3.enable = function enable() {
-      _win4 = window;
-      _doc4 = document;
-      _docEl2 = _doc4.documentElement;
-      _body2 = _doc4.body;
-      if (gsap3) {
-        _toArray = gsap3.utils.toArray;
-        _clamp4 = gsap3.utils.clamp;
-        _context3 = gsap3.core.context || _passThrough3;
-        _suppressOverwrites2 = gsap3.core.suppressOverwrites || _passThrough3;
-        _scrollRestoration = _win4.history.scrollRestoration || "auto";
-        _lastScroll = _win4.pageYOffset;
-        gsap3.core.globals("ScrollTrigger", ScrollTrigger3);
-        if (_body2) {
+      _win6 = window;
+      _doc6 = document;
+      _docEl2 = _doc6.documentElement;
+      _body4 = _doc6.body;
+      if (gsap5) {
+        _toArray3 = gsap5.utils.toArray;
+        _clamp4 = gsap5.utils.clamp;
+        _context3 = gsap5.core.context || _passThrough3;
+        _suppressOverwrites2 = gsap5.core.suppressOverwrites || _passThrough3;
+        _scrollRestoration = _win6.history.scrollRestoration || "auto";
+        _lastScroll = _win6.pageYOffset;
+        gsap5.core.globals("ScrollTrigger", ScrollTrigger3);
+        if (_body4) {
           _enabled = 1;
           _div100vh = document.createElement("div");
           _div100vh.style.height = "100vh";
           _div100vh.style.position = "absolute";
           _refresh100vh();
           _rafBugFix();
-          Observer.register(gsap3);
+          Observer.register(gsap5);
           ScrollTrigger3.isTouch = Observer.isTouch;
           _fixIOSBug = Observer.isTouch && /(iPad|iPhone|iPod|Mac)/g.test(navigator.userAgent);
           _ignoreMobileResize = Observer.isTouch === 1;
-          _addListener3(_win4, "wheel", _onScroll3);
-          _root2 = [_win4, _doc4, _docEl2, _body2];
-          if (gsap3.matchMedia) {
+          _addListener3(_win6, "wheel", _onScroll3);
+          _root2 = [_win6, _doc6, _docEl2, _body4];
+          if (gsap5.matchMedia) {
             ScrollTrigger3.matchMedia = function(vars) {
-              var mm = gsap3.matchMedia(), p;
+              var mm = gsap5.matchMedia(), p;
               for (p in vars) {
                 mm.add(p, vars[p]);
               }
               return mm;
             };
-            gsap3.addEventListener("matchMediaInit", function() {
+            gsap5.addEventListener("matchMediaInit", function() {
               return _revertAll();
             });
-            gsap3.addEventListener("matchMediaRevert", function() {
+            gsap5.addEventListener("matchMediaRevert", function() {
               return _revertRecorded();
             });
-            gsap3.addEventListener("matchMedia", function() {
+            gsap5.addEventListener("matchMedia", function() {
               _refreshAll(0, 1);
               _dispatch3("matchMedia");
             });
-            gsap3.matchMedia("(orientation: portrait)", function() {
+            gsap5.matchMedia("(orientation: portrait)", function() {
               _setBaseDimensions();
               return _setBaseDimensions;
             });
@@ -6454,39 +8007,39 @@
             console.warn("Requires GSAP 3.11.0 or later");
           }
           _setBaseDimensions();
-          _addListener3(_doc4, "scroll", _onScroll3);
-          var bodyStyle = _body2.style, border = bodyStyle.borderTopStyle, AnimationProto = gsap3.core.Animation.prototype, bounds, i;
+          _addListener3(_doc6, "scroll", _onScroll3);
+          var bodyStyle = _body4.style, border = bodyStyle.borderTopStyle, AnimationProto = gsap5.core.Animation.prototype, bounds, i;
           AnimationProto.revert || Object.defineProperty(AnimationProto, "revert", {
             value: function value() {
               return this.time(-0.01, true);
             }
           });
           bodyStyle.borderTopStyle = "solid";
-          bounds = _getBounds(_body2);
+          bounds = _getBounds(_body4);
           _vertical.m = Math.round(bounds.top + _vertical.sc()) || 0;
           _horizontal.m = Math.round(bounds.left + _horizontal.sc()) || 0;
           border ? bodyStyle.borderTopStyle = border : bodyStyle.removeProperty("border-top-style");
           _syncInterval = setInterval(_sync, 250);
-          gsap3.delayedCall(0.5, function() {
+          gsap5.delayedCall(0.5, function() {
             return _startup2 = 0;
           });
-          _addListener3(_doc4, "touchcancel", _passThrough3);
-          _addListener3(_body2, "touchstart", _passThrough3);
-          _multiListener(_addListener3, _doc4, "pointerdown,touchstart,mousedown", _pointerDownHandler);
-          _multiListener(_addListener3, _doc4, "pointerup,touchend,mouseup", _pointerUpHandler);
-          _transformProp2 = gsap3.utils.checkPrefix("transform");
-          _stateProps.push(_transformProp2);
-          _coreInitted3 = _getTime2();
-          _resizeDelay = gsap3.delayedCall(0.2, _refreshAll).pause();
-          _autoRefresh = [_doc4, "visibilitychange", function() {
-            var w = _win4.innerWidth, h = _win4.innerHeight;
-            if (_doc4.hidden) {
+          _addListener3(_doc6, "touchcancel", _passThrough3);
+          _addListener3(_body4, "touchstart", _passThrough3);
+          _multiListener(_addListener3, _doc6, "pointerdown,touchstart,mousedown", _pointerDownHandler);
+          _multiListener(_addListener3, _doc6, "pointerup,touchend,mouseup", _pointerUpHandler);
+          _transformProp3 = gsap5.utils.checkPrefix("transform");
+          _stateProps.push(_transformProp3);
+          _coreInitted4 = _getTime2();
+          _resizeDelay = gsap5.delayedCall(0.2, _refreshAll).pause();
+          _autoRefresh = [_doc6, "visibilitychange", function() {
+            var w = _win6.innerWidth, h = _win6.innerHeight;
+            if (_doc6.hidden) {
               _prevWidth = w;
               _prevHeight = h;
             } else if (_prevWidth !== w || _prevHeight !== h) {
               _onResize();
             }
-          }, _doc4, "DOMContentLoaded", _refreshAll, _win4, "load", _refreshAll, _win4, "resize", _onResize];
+          }, _doc6, "DOMContentLoaded", _refreshAll, _win6, "load", _refreshAll, _win6, "resize", _onResize];
           _iterateAutoRefresh(_addListener3);
           _triggers.forEach(function(trigger) {
             return trigger.enable(0, 1);
@@ -6514,7 +8067,7 @@
         _scrollers.splice(i, isViewport ? 6 : 2);
       }
       if (vars) {
-        isViewport ? _proxies.unshift(_win4, vars, _body2, vars, _docEl2, vars) : _proxies.unshift(t2, vars);
+        isViewport ? _proxies.unshift(_win6, vars, _body4, vars, _docEl2, vars) : _proxies.unshift(t2, vars);
       }
     };
     ScrollTrigger3.clearMatchMedia = function clearMatchMedia(query) {
@@ -6524,12 +8077,12 @@
     };
     ScrollTrigger3.isInViewport = function isInViewport(element, ratio, horizontal) {
       var bounds = (_isString3(element) ? _getTarget(element) : element).getBoundingClientRect(), offset = bounds[horizontal ? _width : _height] * ratio || 0;
-      return horizontal ? bounds.right - offset > 0 && bounds.left + offset < _win4.innerWidth : bounds.bottom - offset > 0 && bounds.top + offset < _win4.innerHeight;
+      return horizontal ? bounds.right - offset > 0 && bounds.left + offset < _win6.innerWidth : bounds.bottom - offset > 0 && bounds.top + offset < _win6.innerHeight;
     };
     ScrollTrigger3.positionInViewport = function positionInViewport(element, referencePoint, horizontal) {
       _isString3(element) && (element = _getTarget(element));
       var bounds = element.getBoundingClientRect(), size = bounds[horizontal ? _width : _height], offset = referencePoint == null ? size / 2 : referencePoint in _keywords ? _keywords[referencePoint] * size : ~referencePoint.indexOf("%") ? parseFloat(referencePoint) * size / 100 : parseFloat(referencePoint) || 0;
-      return horizontal ? (bounds.left + offset) / _win4.innerWidth : (bounds.top + offset) / _win4.innerHeight;
+      return horizontal ? (bounds.left + offset) / _win6.innerWidth : (bounds.top + offset) / _win6.innerHeight;
     };
     ScrollTrigger3.killAll = function killAll(allowListeners) {
       _triggers.slice(0).forEach(function(t2) {
@@ -6547,11 +8100,11 @@
   }();
   ScrollTrigger2.version = "3.12.5";
   ScrollTrigger2.saveStyles = function(targets) {
-    return targets ? _toArray(targets).forEach(function(target) {
+    return targets ? _toArray3(targets).forEach(function(target) {
       if (target && target.style) {
         var i = _savedStyles.indexOf(target);
         i >= 0 && _savedStyles.splice(i, 5);
-        _savedStyles.push(target, target.style.cssText, target.getBBox && target.getAttribute("transform"), gsap3.core.getCache(target), _context3());
+        _savedStyles.push(target, target.style.cssText, target.getBBox && target.getAttribute("transform"), gsap5.core.getCache(target), _context3());
       }
     }) : _savedStyles;
   };
@@ -6562,7 +8115,7 @@
     return new ScrollTrigger2(vars, animation);
   };
   ScrollTrigger2.refresh = function(safe) {
-    return safe ? _onResize() : (_coreInitted3 || ScrollTrigger2.register()) && _refreshAll(true);
+    return safe ? _onResize() : (_coreInitted4 || ScrollTrigger2.register()) && _refreshAll(true);
   };
   ScrollTrigger2.update = function(force) {
     return ++_scrollers.cache && _updateAll(force === true ? 2 : 0);
@@ -6596,7 +8149,7 @@
   };
   ScrollTrigger2.batch = function(targets, vars) {
     var result = [], varsCopy = {}, interval = vars.interval || 0.016, batchMax = vars.batchMax || 1e9, proxyCallback = function proxyCallback2(type, callback) {
-      var elements = [], triggers = [], delay = gsap3.delayedCall(interval, function() {
+      var elements = [], triggers = [], delay = gsap5.delayedCall(interval, function() {
         callback(elements, triggers);
         elements = [];
         triggers = [];
@@ -6617,7 +8170,7 @@
         return batchMax = vars.batchMax();
       });
     }
-    _toArray(targets).forEach(function(target) {
+    _toArray3(targets).forEach(function(target) {
       var config3 = {};
       for (p in varsCopy) {
         config3[p] = varsCopy[p];
@@ -6637,7 +8190,7 @@
     } else {
       target.style.touchAction = direction === true ? "auto" : direction ? "pan-" + direction + (Observer.isTouch ? " pinch-zoom" : "") : "none";
     }
-    target === _docEl2 && _allowNativePanning2(_body2, direction);
+    target === _docEl2 && _allowNativePanning2(_body4, direction);
   };
   var _overflow = {
     auto: 1,
@@ -6645,9 +8198,9 @@
   };
   var _nestedScroll = function _nestedScroll2(_ref5) {
     var event = _ref5.event, target = _ref5.target, axis = _ref5.axis;
-    var node = (event.changedTouches ? event.changedTouches[0] : event).target, cache = node._gsap || gsap3.core.getCache(node), time = _getTime2(), cs;
+    var node = (event.changedTouches ? event.changedTouches[0] : event).target, cache = node._gsap || gsap5.core.getCache(node), time = _getTime2(), cs;
     if (!cache._isScrollT || time - cache._isScrollT > 2e3) {
-      while (node && node !== _body2 && (node.scrollHeight <= node.clientHeight && node.scrollWidth <= node.clientWidth || !(_overflow[(cs = _getComputedStyle(node)).overflowY] || _overflow[cs.overflowX]))) {
+      while (node && node !== _body4 && (node.scrollHeight <= node.clientHeight && node.scrollWidth <= node.clientWidth || !(_overflow[(cs = _getComputedStyle(node)).overflowY] || _overflow[cs.overflowX]))) {
         node = node.parentNode;
       }
       cache._isScroll = node && node !== target && !_isViewport3(node) && (_overflow[(cs = _getComputedStyle(node)).overflowY] || _overflow[cs.overflowX]);
@@ -6670,10 +8223,10 @@
       onDrag: nested,
       onScroll: nested,
       onEnable: function onEnable() {
-        return inputs && _addListener3(_doc4, Observer.eventTypes[0], _captureInputs, false, true);
+        return inputs && _addListener3(_doc6, Observer.eventTypes[0], _captureInputs, false, true);
       },
       onDisable: function onDisable() {
-        return _removeListener3(_doc4, Observer.eventTypes[0], _captureInputs, true);
+        return _removeListener3(_doc6, Observer.eventTypes[0], _captureInputs, true);
       }
     });
   };
@@ -6692,7 +8245,7 @@
     vars.type || (vars.type = "wheel,touch");
     vars.debounce = !!vars.debounce;
     vars.id = vars.id || "normalizer";
-    var _vars2 = vars, normalizeScrollX = _vars2.normalizeScrollX, momentum = _vars2.momentum, allowNestedScroll = _vars2.allowNestedScroll, onRelease = _vars2.onRelease, self, maxY, target = _getTarget(vars.target) || _docEl2, smoother = gsap3.core.globals().ScrollSmoother, smootherInstance = smoother && smoother.get(), content = _fixIOSBug && (vars.content && _getTarget(vars.content) || smootherInstance && vars.content !== false && !smootherInstance.smooth() && smootherInstance.content()), scrollFuncY = _getScrollFunc(target, _vertical), scrollFuncX = _getScrollFunc(target, _horizontal), scale = 1, initialScale = (Observer.isTouch && _win4.visualViewport ? _win4.visualViewport.scale * _win4.visualViewport.width : _win4.outerWidth) / _win4.innerWidth, wheelRefresh = 0, resolveMomentumDuration = _isFunction3(momentum) ? function() {
+    var _vars2 = vars, normalizeScrollX = _vars2.normalizeScrollX, momentum = _vars2.momentum, allowNestedScroll = _vars2.allowNestedScroll, onRelease = _vars2.onRelease, self, maxY, target = _getTarget(vars.target) || _docEl2, smoother = gsap5.core.globals().ScrollSmoother, smootherInstance = smoother && smoother.get(), content = _fixIOSBug && (vars.content && _getTarget(vars.content) || smootherInstance && vars.content !== false && !smootherInstance.smooth() && smootherInstance.content()), scrollFuncY = _getScrollFunc(target, _vertical), scrollFuncX = _getScrollFunc(target, _horizontal), scale = 1, initialScale = (Observer.isTouch && _win6.visualViewport ? _win6.visualViewport.scale * _win6.visualViewport.width : _win6.outerWidth) / _win6.innerWidth, wheelRefresh = 0, resolveMomentumDuration = _isFunction3(momentum) ? function() {
       return momentum(self);
     } : function() {
       return momentum || 2.8;
@@ -6704,16 +8257,16 @@
       normalizeScrollX && (scrollClampX = _clamp4(0, _maxScroll(target, _horizontal)));
       lastRefreshID = _refreshID;
     }, removeContentOffset = function removeContentOffset2() {
-      content._gsap.y = _round3(parseFloat(content._gsap.y) + scrollFuncY.offset) + "px";
+      content._gsap.y = _round7(parseFloat(content._gsap.y) + scrollFuncY.offset) + "px";
       content.style.transform = "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, " + parseFloat(content._gsap.y) + ", 0, 1)";
       scrollFuncY.offset = scrollFuncY.cacheID = 0;
     }, ignoreDrag = function ignoreDrag2() {
       if (skipTouchMove) {
         requestAnimationFrame(resumeTouchMove);
-        var offset = _round3(self.deltaY / 2), scroll = scrollClampY(scrollFuncY.v - offset);
+        var offset = _round7(self.deltaY / 2), scroll = scrollClampY(scrollFuncY.v - offset);
         if (content && scroll !== scrollFuncY.v + scrollFuncY.offset) {
           scrollFuncY.offset = scroll - scrollFuncY.v;
-          var y = _round3((parseFloat(content && content._gsap.y) || 0) - scrollFuncY.offset);
+          var y = _round7((parseFloat(content && content._gsap.y) || 0) - scrollFuncY.offset);
           content.style.transform = "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, " + y + ", 0, 1)";
           content._gsap.y = y + "px";
           scrollFuncY.cacheID = _scrollers.cache;
@@ -6729,7 +8282,7 @@
         scrollFuncY() > maxY ? tween.progress(1) && scrollFuncY(maxY) : tween.resetTo("scrollY", maxY);
       }
     };
-    content && gsap3.set(content, {
+    content && gsap5.set(content, {
       y: "+=0"
     });
     vars.ignoreCheck = function(e2) {
@@ -6738,7 +8291,7 @@
     vars.onPress = function() {
       skipTouchMove = false;
       var prevScale = scale;
-      scale = _round3((_win4.visualViewport && _win4.visualViewport.scale || 1) / initialScale);
+      scale = _round7((_win6.visualViewport && _win6.visualViewport.scale || 1) / initialScale);
       tween.pause();
       prevScale !== scale && _allowNativePanning(target, scale > 1.01 ? true : normalizeScrollX ? false : "x");
       startScrollX = scrollFuncX();
@@ -6765,7 +8318,7 @@
         tween.vars.scrollY = scrollClampY(endScroll);
         tween.invalidate().duration(dur).play(0.01);
         if (_fixIOSBug && tween.vars.scrollY >= maxY || currentScroll >= maxY - 1) {
-          gsap3.to({}, {
+          gsap5.to({}, {
             onUpdate: onResize,
             duration: dur
           });
@@ -6794,7 +8347,7 @@
     vars.onEnable = function() {
       _allowNativePanning(target, normalizeScrollX ? false : "x");
       ScrollTrigger2.addEventListener("refresh", onResize);
-      _addListener3(_win4, "resize", onResize);
+      _addListener3(_win6, "resize", onResize);
       if (scrollFuncY.smooth) {
         scrollFuncY.target.style.scrollBehavior = "auto";
         scrollFuncY.smooth = scrollFuncX.smooth = false;
@@ -6803,7 +8356,7 @@
     };
     vars.onDisable = function() {
       _allowNativePanning(target, true);
-      _removeListener3(_win4, "resize", onResize);
+      _removeListener3(_win6, "resize", onResize);
       ScrollTrigger2.removeEventListener("refresh", onResize);
       inputObserver.kill();
     };
@@ -6811,9 +8364,9 @@
     self = new Observer(vars);
     self.iOS = _fixIOSBug;
     _fixIOSBug && !scrollFuncY() && scrollFuncY(1);
-    _fixIOSBug && gsap3.ticker.add(_passThrough3);
+    _fixIOSBug && gsap5.ticker.add(_passThrough3);
     onStopDelayedCall = self._dc;
-    tween = gsap3.to(self, {
+    tween = gsap5.to(self, {
       ease: "power4",
       paused: true,
       inherit: false,
@@ -6872,10 +8425,439 @@
       }
     }
   };
-  _getGSAP3() && gsap3.registerPlugin(ScrollTrigger2);
+  _getGSAP5() && gsap5.registerPlugin(ScrollTrigger2);
 
-  // src/landing_page.js
-  gsapWithCSS.registerPlugin(ScrollTrigger2);
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/utils/strings.js
+  var emojiExp = /([\uD800-\uDBFF][\uDC00-\uDFFF](?:[\u200D\uFE0F][\uD800-\uDBFF][\uDC00-\uDFFF]){2,}|\uD83D\uDC69(?:\u200D(?:(?:\uD83D\uDC69\u200D)?\uD83D\uDC67|(?:\uD83D\uDC69\u200D)?\uD83D\uDC66)|\uD83C[\uDFFB-\uDFFF])|\uD83D\uDC69\u200D(?:\uD83D\uDC69\u200D)?\uD83D\uDC66\u200D\uD83D\uDC66|\uD83D\uDC69\u200D(?:\uD83D\uDC69\u200D)?\uD83D\uDC67\u200D(?:\uD83D[\uDC66\uDC67])|\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08|(?:\uD83C[\uDFC3\uDFC4\uDFCA]|\uD83D[\uDC6E\uDC71\uDC73\uDC77\uDC81\uDC82\uDC86\uDC87\uDE45-\uDE47\uDE4B\uDE4D\uDE4E\uDEA3\uDEB4-\uDEB6]|\uD83E[\uDD26\uDD37-\uDD39\uDD3D\uDD3E\uDDD6-\uDDDD])(?:\uD83C[\uDFFB-\uDFFF])\u200D[\u2640\u2642]\uFE0F|\uD83D\uDC69(?:\uD83C[\uDFFB-\uDFFF])\u200D(?:\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92])|(?:\uD83C[\uDFC3\uDFC4\uDFCA]|\uD83D[\uDC6E\uDC6F\uDC71\uDC73\uDC77\uDC81\uDC82\uDC86\uDC87\uDE45-\uDE47\uDE4B\uDE4D\uDE4E\uDEA3\uDEB4-\uDEB6]|\uD83E[\uDD26\uDD37-\uDD39\uDD3C-\uDD3E\uDDD6-\uDDDF])\u200D[\u2640\u2642]\uFE0F|\uD83C\uDDFD\uD83C\uDDF0|\uD83C\uDDF6\uD83C\uDDE6|\uD83C\uDDF4\uD83C\uDDF2|\uD83C\uDDE9(?:\uD83C[\uDDEA\uDDEC\uDDEF\uDDF0\uDDF2\uDDF4\uDDFF])|\uD83C\uDDF7(?:\uD83C[\uDDEA\uDDF4\uDDF8\uDDFA\uDDFC])|\uD83C\uDDE8(?:\uD83C[\uDDE6\uDDE8\uDDE9\uDDEB-\uDDEE\uDDF0-\uDDF5\uDDF7\uDDFA-\uDDFF])|(?:\u26F9|\uD83C[\uDFCB\uDFCC]|\uD83D\uDD75)(?:\uFE0F\u200D[\u2640\u2642]|(?:\uD83C[\uDFFB-\uDFFF])\u200D[\u2640\u2642])\uFE0F|(?:\uD83D\uDC41\uFE0F\u200D\uD83D\uDDE8|\uD83D\uDC69(?:\uD83C[\uDFFB-\uDFFF])\u200D[\u2695\u2696\u2708]|\uD83D\uDC69\u200D[\u2695\u2696\u2708]|\uD83D\uDC68(?:(?:\uD83C[\uDFFB-\uDFFF])\u200D[\u2695\u2696\u2708]|\u200D[\u2695\u2696\u2708]))\uFE0F|\uD83C\uDDF2(?:\uD83C[\uDDE6\uDDE8-\uDDED\uDDF0-\uDDFF])|\uD83D\uDC69\u200D(?:\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\u2764\uFE0F\u200D(?:\uD83D\uDC8B\u200D(?:\uD83D[\uDC68\uDC69])|\uD83D[\uDC68\uDC69]))|\uD83C\uDDF1(?:\uD83C[\uDDE6-\uDDE8\uDDEE\uDDF0\uDDF7-\uDDFB\uDDFE])|\uD83C\uDDEF(?:\uD83C[\uDDEA\uDDF2\uDDF4\uDDF5])|\uD83C\uDDED(?:\uD83C[\uDDF0\uDDF2\uDDF3\uDDF7\uDDF9\uDDFA])|\uD83C\uDDEB(?:\uD83C[\uDDEE-\uDDF0\uDDF2\uDDF4\uDDF7])|[#\*0-9]\uFE0F\u20E3|\uD83C\uDDE7(?:\uD83C[\uDDE6\uDDE7\uDDE9-\uDDEF\uDDF1-\uDDF4\uDDF6-\uDDF9\uDDFB\uDDFC\uDDFE\uDDFF])|\uD83C\uDDE6(?:\uD83C[\uDDE8-\uDDEC\uDDEE\uDDF1\uDDF2\uDDF4\uDDF6-\uDDFA\uDDFC\uDDFD\uDDFF])|\uD83C\uDDFF(?:\uD83C[\uDDE6\uDDF2\uDDFC])|\uD83C\uDDF5(?:\uD83C[\uDDE6\uDDEA-\uDDED\uDDF0-\uDDF3\uDDF7-\uDDF9\uDDFC\uDDFE])|\uD83C\uDDFB(?:\uD83C[\uDDE6\uDDE8\uDDEA\uDDEC\uDDEE\uDDF3\uDDFA])|\uD83C\uDDF3(?:\uD83C[\uDDE6\uDDE8\uDDEA-\uDDEC\uDDEE\uDDF1\uDDF4\uDDF5\uDDF7\uDDFA\uDDFF])|\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62(?:\uDB40\uDC77\uDB40\uDC6C\uDB40\uDC73|\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74|\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67)\uDB40\uDC7F|\uD83D\uDC68(?:\u200D(?:\u2764\uFE0F\u200D(?:\uD83D\uDC8B\u200D)?\uD83D\uDC68|(?:(?:\uD83D[\uDC68\uDC69])\u200D)?\uD83D\uDC66\u200D\uD83D\uDC66|(?:(?:\uD83D[\uDC68\uDC69])\u200D)?\uD83D\uDC67\u200D(?:\uD83D[\uDC66\uDC67])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92])|(?:\uD83C[\uDFFB-\uDFFF])\u200D(?:\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]))|\uD83C\uDDF8(?:\uD83C[\uDDE6-\uDDEA\uDDEC-\uDDF4\uDDF7-\uDDF9\uDDFB\uDDFD-\uDDFF])|\uD83C\uDDF0(?:\uD83C[\uDDEA\uDDEC-\uDDEE\uDDF2\uDDF3\uDDF5\uDDF7\uDDFC\uDDFE\uDDFF])|\uD83C\uDDFE(?:\uD83C[\uDDEA\uDDF9])|\uD83C\uDDEE(?:\uD83C[\uDDE8-\uDDEA\uDDF1-\uDDF4\uDDF6-\uDDF9])|\uD83C\uDDF9(?:\uD83C[\uDDE6\uDDE8\uDDE9\uDDEB-\uDDED\uDDEF-\uDDF4\uDDF7\uDDF9\uDDFB\uDDFC\uDDFF])|\uD83C\uDDEC(?:\uD83C[\uDDE6\uDDE7\uDDE9-\uDDEE\uDDF1-\uDDF3\uDDF5-\uDDFA\uDDFC\uDDFE])|\uD83C\uDDFA(?:\uD83C[\uDDE6\uDDEC\uDDF2\uDDF3\uDDF8\uDDFE\uDDFF])|\uD83C\uDDEA(?:\uD83C[\uDDE6\uDDE8\uDDEA\uDDEC\uDDED\uDDF7-\uDDFA])|\uD83C\uDDFC(?:\uD83C[\uDDEB\uDDF8])|(?:\u26F9|\uD83C[\uDFCB\uDFCC]|\uD83D\uDD75)(?:\uD83C[\uDFFB-\uDFFF])|(?:\uD83C[\uDFC3\uDFC4\uDFCA]|\uD83D[\uDC6E\uDC71\uDC73\uDC77\uDC81\uDC82\uDC86\uDC87\uDE45-\uDE47\uDE4B\uDE4D\uDE4E\uDEA3\uDEB4-\uDEB6]|\uD83E[\uDD26\uDD37-\uDD39\uDD3D\uDD3E\uDDD6-\uDDDD])(?:\uD83C[\uDFFB-\uDFFF])|(?:[\u261D\u270A-\u270D]|\uD83C[\uDF85\uDFC2\uDFC7]|\uD83D[\uDC42\uDC43\uDC46-\uDC50\uDC66\uDC67\uDC70\uDC72\uDC74-\uDC76\uDC78\uDC7C\uDC83\uDC85\uDCAA\uDD74\uDD7A\uDD90\uDD95\uDD96\uDE4C\uDE4F\uDEC0\uDECC]|\uD83E[\uDD18-\uDD1C\uDD1E\uDD1F\uDD30-\uDD36\uDDD1-\uDDD5])(?:\uD83C[\uDFFB-\uDFFF])|\uD83D\uDC68(?:\u200D(?:(?:(?:\uD83D[\uDC68\uDC69])\u200D)?\uD83D\uDC67|(?:(?:\uD83D[\uDC68\uDC69])\u200D)?\uD83D\uDC66)|\uD83C[\uDFFB-\uDFFF])|(?:[\u261D\u26F9\u270A-\u270D]|\uD83C[\uDF85\uDFC2-\uDFC4\uDFC7\uDFCA-\uDFCC]|\uD83D[\uDC42\uDC43\uDC46-\uDC50\uDC66-\uDC69\uDC6E\uDC70-\uDC78\uDC7C\uDC81-\uDC83\uDC85-\uDC87\uDCAA\uDD74\uDD75\uDD7A\uDD90\uDD95\uDD96\uDE45-\uDE47\uDE4B-\uDE4F\uDEA3\uDEB4-\uDEB6\uDEC0\uDECC]|\uD83E[\uDD18-\uDD1C\uDD1E\uDD1F\uDD26\uDD30-\uDD39\uDD3D\uDD3E\uDDD1-\uDDDD])(?:\uD83C[\uDFFB-\uDFFF])?|(?:[\u231A\u231B\u23E9-\u23EC\u23F0\u23F3\u25FD\u25FE\u2614\u2615\u2648-\u2653\u267F\u2693\u26A1\u26AA\u26AB\u26BD\u26BE\u26C4\u26C5\u26CE\u26D4\u26EA\u26F2\u26F3\u26F5\u26FA\u26FD\u2705\u270A\u270B\u2728\u274C\u274E\u2753-\u2755\u2757\u2795-\u2797\u27B0\u27BF\u2B1B\u2B1C\u2B50\u2B55]|\uD83C[\uDC04\uDCCF\uDD8E\uDD91-\uDD9A\uDDE6-\uDDFF\uDE01\uDE1A\uDE2F\uDE32-\uDE36\uDE38-\uDE3A\uDE50\uDE51\uDF00-\uDF20\uDF2D-\uDF35\uDF37-\uDF7C\uDF7E-\uDF93\uDFA0-\uDFCA\uDFCF-\uDFD3\uDFE0-\uDFF0\uDFF4\uDFF8-\uDFFF]|\uD83D[\uDC00-\uDC3E\uDC40\uDC42-\uDCFC\uDCFF-\uDD3D\uDD4B-\uDD4E\uDD50-\uDD67\uDD7A\uDD95\uDD96\uDDA4\uDDFB-\uDE4F\uDE80-\uDEC5\uDECC\uDED0-\uDED2\uDEEB\uDEEC\uDEF4-\uDEF8]|\uD83E[\uDD10-\uDD3A\uDD3C-\uDD3E\uDD40-\uDD45\uDD47-\uDD4C\uDD50-\uDD6B\uDD80-\uDD97\uDDC0\uDDD0-\uDDE6])|(?:[#\*0-9\xA9\xAE\u203C\u2049\u2122\u2139\u2194-\u2199\u21A9\u21AA\u231A\u231B\u2328\u23CF\u23E9-\u23F3\u23F8-\u23FA\u24C2\u25AA\u25AB\u25B6\u25C0\u25FB-\u25FE\u2600-\u2604\u260E\u2611\u2614\u2615\u2618\u261D\u2620\u2622\u2623\u2626\u262A\u262E\u262F\u2638-\u263A\u2640\u2642\u2648-\u2653\u2660\u2663\u2665\u2666\u2668\u267B\u267F\u2692-\u2697\u2699\u269B\u269C\u26A0\u26A1\u26AA\u26AB\u26B0\u26B1\u26BD\u26BE\u26C4\u26C5\u26C8\u26CE\u26CF\u26D1\u26D3\u26D4\u26E9\u26EA\u26F0-\u26F5\u26F7-\u26FA\u26FD\u2702\u2705\u2708-\u270D\u270F\u2712\u2714\u2716\u271D\u2721\u2728\u2733\u2734\u2744\u2747\u274C\u274E\u2753-\u2755\u2757\u2763\u2764\u2795-\u2797\u27A1\u27B0\u27BF\u2934\u2935\u2B05-\u2B07\u2B1B\u2B1C\u2B50\u2B55\u3030\u303D\u3297\u3299]|\uD83C[\uDC04\uDCCF\uDD70\uDD71\uDD7E\uDD7F\uDD8E\uDD91-\uDD9A\uDDE6-\uDDFF\uDE01\uDE02\uDE1A\uDE2F\uDE32-\uDE3A\uDE50\uDE51\uDF00-\uDF21\uDF24-\uDF93\uDF96\uDF97\uDF99-\uDF9B\uDF9E-\uDFF0\uDFF3-\uDFF5\uDFF7-\uDFFF]|\uD83D[\uDC00-\uDCFD\uDCFF-\uDD3D\uDD49-\uDD4E\uDD50-\uDD67\uDD6F\uDD70\uDD73-\uDD7A\uDD87\uDD8A-\uDD8D\uDD90\uDD95\uDD96\uDDA4\uDDA5\uDDA8\uDDB1\uDDB2\uDDBC\uDDC2-\uDDC4\uDDD1-\uDDD3\uDDDC-\uDDDE\uDDE1\uDDE3\uDDE8\uDDEF\uDDF3\uDDFA-\uDE4F\uDE80-\uDEC5\uDECB-\uDED2\uDEE0-\uDEE5\uDEE9\uDEEB\uDEEC\uDEF0\uDEF3-\uDEF8]|\uD83E[\uDD10-\uDD3A\uDD3C-\uDD3E\uDD40-\uDD45\uDD47-\uDD4C\uDD50-\uDD6B\uDD80-\uDD97\uDDC0\uDDD0-\uDDE6])\uFE0F)/;
+  function getText(e2) {
+    var type = e2.nodeType, result = "";
+    if (type === 1 || type === 9 || type === 11) {
+      if (typeof e2.textContent === "string") {
+        return e2.textContent;
+      } else {
+        for (e2 = e2.firstChild; e2; e2 = e2.nextSibling) {
+          result += getText(e2);
+        }
+      }
+    } else if (type === 3 || type === 4) {
+      return e2.nodeValue;
+    }
+    return result;
+  }
+
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/SplitText.js
+  var _doc7;
+  var _win7;
+  var _coreInitted5;
+  var gsap6;
+  var _context4;
+  var _toArray4;
+  var _stripExp = /(?:\r|\n|\t\t)/g;
+  var _multipleSpacesExp = /(?:\s\s+)/g;
+  var _nonBreakingSpace = String.fromCharCode(160);
+  var _initCore7 = function _initCore8(core) {
+    _doc7 = document;
+    _win7 = window;
+    gsap6 = gsap6 || core || _win7.gsap || console.warn("Please gsap.registerPlugin(SplitText)");
+    if (gsap6) {
+      _toArray4 = gsap6.utils.toArray;
+      _context4 = gsap6.core.context || function() {
+      };
+      _coreInitted5 = 1;
+    }
+  };
+  var _bonusValidated2 = 1;
+  var _getComputedStyle3 = function _getComputedStyle4(element) {
+    return _win7.getComputedStyle(element);
+  };
+  var _isAbsolute = function _isAbsolute2(vars) {
+    return vars.position === "absolute" || vars.absolute === true;
+  };
+  var _findSpecialChars = function _findSpecialChars2(text, chars) {
+    var i = chars.length, s;
+    while (--i > -1) {
+      s = chars[i];
+      if (text.substr(0, s.length) === s) {
+        return s.length;
+      }
+    }
+  };
+  var _divStart = " style='position:relative;display:inline-block;'";
+  var _cssClassFunc = function _cssClassFunc2(cssClass, tag) {
+    if (cssClass === void 0) {
+      cssClass = "";
+    }
+    var iterate = ~cssClass.indexOf("++"), num = 1;
+    if (iterate) {
+      cssClass = cssClass.split("++").join("");
+    }
+    return function() {
+      return "<" + tag + _divStart + (cssClass ? " class='" + cssClass + (iterate ? num++ : "") + "'>" : ">");
+    };
+  };
+  var _swapText = function _swapText2(element, oldText, newText) {
+    var type = element.nodeType;
+    if (type === 1 || type === 9 || type === 11) {
+      for (element = element.firstChild; element; element = element.nextSibling) {
+        _swapText2(element, oldText, newText);
+      }
+    } else if (type === 3 || type === 4) {
+      element.nodeValue = element.nodeValue.split(oldText).join(newText);
+    }
+  };
+  var _pushReversed = function _pushReversed2(a, merge) {
+    var i = merge.length;
+    while (--i > -1) {
+      a.push(merge[i]);
+    }
+  };
+  var _isBeforeWordDelimiter = function _isBeforeWordDelimiter2(e2, root, wordDelimiter) {
+    var next;
+    while (e2 && e2 !== root) {
+      next = e2._next || e2.nextSibling;
+      if (next) {
+        return next.textContent.charAt(0) === wordDelimiter;
+      }
+      e2 = e2.parentNode || e2._parent;
+    }
+  };
+  var _deWordify = function _deWordify2(e2) {
+    var children = _toArray4(e2.childNodes), l = children.length, i, child;
+    for (i = 0; i < l; i++) {
+      child = children[i];
+      if (child._isSplit) {
+        _deWordify2(child);
+      } else {
+        if (i && child.previousSibling && child.previousSibling.nodeType === 3) {
+          child.previousSibling.nodeValue += child.nodeType === 3 ? child.nodeValue : child.firstChild.nodeValue;
+          e2.removeChild(child);
+        } else if (child.nodeType !== 3) {
+          e2.insertBefore(child.firstChild, child);
+          e2.removeChild(child);
+        }
+      }
+    }
+  };
+  var _getStyleAsNumber = function _getStyleAsNumber2(name, computedStyle) {
+    return parseFloat(computedStyle[name]) || 0;
+  };
+  var _setPositionsAfterSplit = function _setPositionsAfterSplit2(element, vars, allChars, allWords, allLines, origWidth, origHeight) {
+    var cs = _getComputedStyle3(element), paddingLeft = _getStyleAsNumber("paddingLeft", cs), lineOffsetY = -999, borderTopAndBottom = _getStyleAsNumber("borderBottomWidth", cs) + _getStyleAsNumber("borderTopWidth", cs), borderLeftAndRight = _getStyleAsNumber("borderLeftWidth", cs) + _getStyleAsNumber("borderRightWidth", cs), padTopAndBottom = _getStyleAsNumber("paddingTop", cs) + _getStyleAsNumber("paddingBottom", cs), padLeftAndRight = _getStyleAsNumber("paddingLeft", cs) + _getStyleAsNumber("paddingRight", cs), lineThreshold = _getStyleAsNumber("fontSize", cs) * (vars.lineThreshold || 0.2), textAlign = cs.textAlign, charArray = [], wordArray = [], lineArray = [], wordDelimiter = vars.wordDelimiter || " ", tag = vars.tag ? vars.tag : vars.span ? "span" : "div", types = vars.type || vars.split || "chars,words,lines", lines = allLines && ~types.indexOf("lines") ? [] : null, words = ~types.indexOf("words"), chars = ~types.indexOf("chars"), absolute = _isAbsolute(vars), linesClass = vars.linesClass, iterateLine = ~(linesClass || "").indexOf("++"), spaceNodesToRemove = [], isFlex = cs.display === "flex", prevInlineDisplay = element.style.display, i, j, l, node, nodes, isChild, curLine, addWordSpaces, style, lineNode, lineWidth, offset;
+    iterateLine && (linesClass = linesClass.split("++").join(""));
+    isFlex && (element.style.display = "block");
+    j = element.getElementsByTagName("*");
+    l = j.length;
+    nodes = [];
+    for (i = 0; i < l; i++) {
+      nodes[i] = j[i];
+    }
+    if (lines || absolute) {
+      for (i = 0; i < l; i++) {
+        node = nodes[i];
+        isChild = node.parentNode === element;
+        if (isChild || absolute || chars && !words) {
+          offset = node.offsetTop;
+          if (lines && isChild && Math.abs(offset - lineOffsetY) > lineThreshold && (node.nodeName !== "BR" || i === 0)) {
+            curLine = [];
+            lines.push(curLine);
+            lineOffsetY = offset;
+          }
+          if (absolute) {
+            node._x = node.offsetLeft;
+            node._y = offset;
+            node._w = node.offsetWidth;
+            node._h = node.offsetHeight;
+          }
+          if (lines) {
+            if (node._isSplit && isChild || !chars && isChild || words && isChild || !words && node.parentNode.parentNode === element && !node.parentNode._isSplit) {
+              curLine.push(node);
+              node._x -= paddingLeft;
+              if (_isBeforeWordDelimiter(node, element, wordDelimiter)) {
+                node._wordEnd = true;
+              }
+            }
+            if (node.nodeName === "BR" && (node.nextSibling && node.nextSibling.nodeName === "BR" || i === 0)) {
+              lines.push([]);
+            }
+          }
+        }
+      }
+    }
+    for (i = 0; i < l; i++) {
+      node = nodes[i];
+      isChild = node.parentNode === element;
+      if (node.nodeName === "BR") {
+        if (lines || absolute) {
+          node.parentNode && node.parentNode.removeChild(node);
+          nodes.splice(i--, 1);
+          l--;
+        } else if (!words) {
+          element.appendChild(node);
+        }
+        continue;
+      }
+      if (absolute) {
+        style = node.style;
+        if (!words && !isChild) {
+          node._x += node.parentNode._x;
+          node._y += node.parentNode._y;
+        }
+        style.left = node._x + "px";
+        style.top = node._y + "px";
+        style.position = "absolute";
+        style.display = "block";
+        style.width = node._w + 1 + "px";
+        style.height = node._h + "px";
+      }
+      if (!words && chars) {
+        if (node._isSplit) {
+          node._next = j = node.nextSibling;
+          node.parentNode.appendChild(node);
+          while (j && j.nodeType === 3 && j.textContent === " ") {
+            node._next = j.nextSibling;
+            node.parentNode.appendChild(j);
+            j = j.nextSibling;
+          }
+        } else if (node.parentNode._isSplit) {
+          node._parent = node.parentNode;
+          if (!node.previousSibling && node.firstChild) {
+            node.firstChild._isFirst = true;
+          }
+          if (node.nextSibling && node.nextSibling.textContent === " " && !node.nextSibling.nextSibling) {
+            spaceNodesToRemove.push(node.nextSibling);
+          }
+          node._next = node.nextSibling && node.nextSibling._isFirst ? null : node.nextSibling;
+          node.parentNode.removeChild(node);
+          nodes.splice(i--, 1);
+          l--;
+        } else if (!isChild) {
+          offset = !node.nextSibling && _isBeforeWordDelimiter(node.parentNode, element, wordDelimiter);
+          node.parentNode._parent && node.parentNode._parent.appendChild(node);
+          offset && node.parentNode.appendChild(_doc7.createTextNode(" "));
+          if (tag === "span") {
+            node.style.display = "inline";
+          }
+          charArray.push(node);
+        }
+      } else if (node.parentNode._isSplit && !node._isSplit && node.innerHTML !== "") {
+        wordArray.push(node);
+      } else if (chars && !node._isSplit) {
+        if (tag === "span") {
+          node.style.display = "inline";
+        }
+        charArray.push(node);
+      }
+    }
+    i = spaceNodesToRemove.length;
+    while (--i > -1) {
+      spaceNodesToRemove[i].parentNode.removeChild(spaceNodesToRemove[i]);
+    }
+    if (lines) {
+      if (absolute) {
+        lineNode = _doc7.createElement(tag);
+        element.appendChild(lineNode);
+        lineWidth = lineNode.offsetWidth + "px";
+        offset = lineNode.offsetParent === element ? 0 : element.offsetLeft;
+        element.removeChild(lineNode);
+      }
+      style = element.style.cssText;
+      element.style.cssText = "display:none;";
+      while (element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
+      addWordSpaces = wordDelimiter === " " && (!absolute || !words && !chars);
+      for (i = 0; i < lines.length; i++) {
+        curLine = lines[i];
+        lineNode = _doc7.createElement(tag);
+        lineNode.style.cssText = "display:block;text-align:" + textAlign + ";position:" + (absolute ? "absolute;" : "relative;");
+        if (linesClass) {
+          lineNode.className = linesClass + (iterateLine ? i + 1 : "");
+        }
+        lineArray.push(lineNode);
+        l = curLine.length;
+        for (j = 0; j < l; j++) {
+          if (curLine[j].nodeName !== "BR") {
+            node = curLine[j];
+            lineNode.appendChild(node);
+            addWordSpaces && node._wordEnd && lineNode.appendChild(_doc7.createTextNode(" "));
+            if (absolute) {
+              if (j === 0) {
+                lineNode.style.top = node._y + "px";
+                lineNode.style.left = paddingLeft + offset + "px";
+              }
+              node.style.top = "0px";
+              if (offset) {
+                node.style.left = node._x - offset + "px";
+              }
+            }
+          }
+        }
+        if (l === 0) {
+          lineNode.innerHTML = "&nbsp;";
+        } else if (!words && !chars) {
+          _deWordify(lineNode);
+          _swapText(lineNode, String.fromCharCode(160), " ");
+        }
+        if (absolute) {
+          lineNode.style.width = lineWidth;
+          lineNode.style.height = node._h + "px";
+        }
+        element.appendChild(lineNode);
+      }
+      element.style.cssText = style;
+    }
+    if (absolute) {
+      if (origHeight > element.clientHeight) {
+        element.style.height = origHeight - padTopAndBottom + "px";
+        if (element.clientHeight < origHeight) {
+          element.style.height = origHeight + borderTopAndBottom + "px";
+        }
+      }
+      if (origWidth > element.clientWidth) {
+        element.style.width = origWidth - padLeftAndRight + "px";
+        if (element.clientWidth < origWidth) {
+          element.style.width = origWidth + borderLeftAndRight + "px";
+        }
+      }
+    }
+    isFlex && (prevInlineDisplay ? element.style.display = prevInlineDisplay : element.style.removeProperty("display"));
+    _pushReversed(allChars, charArray);
+    words && _pushReversed(allWords, wordArray);
+    _pushReversed(allLines, lineArray);
+  };
+  var _splitRawText = function _splitRawText2(element, vars, wordStart, charStart) {
+    var tag = vars.tag ? vars.tag : vars.span ? "span" : "div", types = vars.type || vars.split || "chars,words,lines", chars = ~types.indexOf("chars"), absolute = _isAbsolute(vars), wordDelimiter = vars.wordDelimiter || " ", isWordDelimiter = function isWordDelimiter2(_char) {
+      return _char === wordDelimiter || _char === _nonBreakingSpace && wordDelimiter === " ";
+    }, space = wordDelimiter !== " " ? "" : absolute ? "&#173; " : " ", wordEnd = "</" + tag + ">", wordIsOpen = 1, specialChars = vars.specialChars ? typeof vars.specialChars === "function" ? vars.specialChars : _findSpecialChars : null, text, splitText, i, j, l, character, hasTagStart, testResult, container = _doc7.createElement("div"), parent = element.parentNode;
+    parent.insertBefore(container, element);
+    container.textContent = element.nodeValue;
+    parent.removeChild(element);
+    element = container;
+    text = getText(element);
+    hasTagStart = text.indexOf("<") !== -1;
+    if (vars.reduceWhiteSpace !== false) {
+      text = text.replace(_multipleSpacesExp, " ").replace(_stripExp, "");
+    }
+    if (hasTagStart) {
+      text = text.split("<").join("{{LT}}");
+    }
+    l = text.length;
+    splitText = (text.charAt(0) === " " ? space : "") + wordStart();
+    for (i = 0; i < l; i++) {
+      character = text.charAt(i);
+      if (specialChars && (testResult = specialChars(text.substr(i), vars.specialChars))) {
+        character = text.substr(i, testResult || 1);
+        splitText += chars && character !== " " ? charStart() + character + "</" + tag + ">" : character;
+        i += testResult - 1;
+      } else if (isWordDelimiter(character) && !isWordDelimiter(text.charAt(i - 1)) && i) {
+        splitText += wordIsOpen ? wordEnd : "";
+        wordIsOpen = 0;
+        while (isWordDelimiter(text.charAt(i + 1))) {
+          splitText += space;
+          i++;
+        }
+        if (i === l - 1) {
+          splitText += space;
+        } else if (text.charAt(i + 1) !== ")") {
+          splitText += space + wordStart();
+          wordIsOpen = 1;
+        }
+      } else if (character === "{" && text.substr(i, 6) === "{{LT}}") {
+        splitText += chars ? charStart() + "{{LT}}</" + tag + ">" : "{{LT}}";
+        i += 5;
+      } else if (character.charCodeAt(0) >= 55296 && character.charCodeAt(0) <= 56319 || text.charCodeAt(i + 1) >= 65024 && text.charCodeAt(i + 1) <= 65039) {
+        j = ((text.substr(i, 12).split(emojiExp) || [])[1] || "").length || 2;
+        splitText += chars && character !== " " ? charStart() + text.substr(i, j) + "</" + tag + ">" : text.substr(i, j);
+        i += j - 1;
+      } else {
+        splitText += chars && character !== " " ? charStart() + character + "</" + tag + ">" : character;
+      }
+    }
+    element.outerHTML = splitText + (wordIsOpen ? wordEnd : "");
+    hasTagStart && _swapText(parent, "{{LT}}", "<");
+  };
+  var _split = function _split2(element, vars, wordStart, charStart) {
+    var children = _toArray4(element.childNodes), l = children.length, absolute = _isAbsolute(vars), i, child;
+    if (element.nodeType !== 3 || l > 1) {
+      vars.absolute = false;
+      for (i = 0; i < l; i++) {
+        child = children[i];
+        child._next = child._isFirst = child._parent = child._wordEnd = null;
+        if (child.nodeType !== 3 || /\S+/.test(child.nodeValue)) {
+          if (absolute && child.nodeType !== 3 && _getComputedStyle3(child).display === "inline") {
+            child.style.display = "inline-block";
+            child.style.position = "relative";
+          }
+          child._isSplit = true;
+          _split2(child, vars, wordStart, charStart);
+        }
+      }
+      vars.absolute = absolute;
+      element._isSplit = true;
+      return;
+    }
+    _splitRawText(element, vars, wordStart, charStart);
+  };
+  var SplitText = /* @__PURE__ */ function() {
+    function SplitText2(element, vars) {
+      _coreInitted5 || _initCore7();
+      this.elements = _toArray4(element);
+      this.chars = [];
+      this.words = [];
+      this.lines = [];
+      this._originals = [];
+      this.vars = vars || {};
+      _context4(this);
+      _bonusValidated2 && this.split(vars);
+    }
+    var _proto = SplitText2.prototype;
+    _proto.split = function split(vars) {
+      this.isSplit && this.revert();
+      this.vars = vars = vars || this.vars;
+      this._originals.length = this.chars.length = this.words.length = this.lines.length = 0;
+      var i = this.elements.length, tag = vars.tag ? vars.tag : vars.span ? "span" : "div", wordStart = _cssClassFunc(vars.wordsClass, tag), charStart = _cssClassFunc(vars.charsClass, tag), origHeight, origWidth, e2;
+      while (--i > -1) {
+        e2 = this.elements[i];
+        this._originals[i] = {
+          html: e2.innerHTML,
+          style: e2.getAttribute("style")
+        };
+        origHeight = e2.clientHeight;
+        origWidth = e2.clientWidth;
+        _split(e2, vars, wordStart, charStart);
+        _setPositionsAfterSplit(e2, vars, this.chars, this.words, this.lines, origWidth, origHeight);
+      }
+      this.chars.reverse();
+      this.words.reverse();
+      this.lines.reverse();
+      this.isSplit = true;
+      return this;
+    };
+    _proto.revert = function revert() {
+      var originals = this._originals;
+      if (!originals) {
+        throw "revert() call wasn't scoped properly.";
+      }
+      this.elements.forEach(function(e2, i) {
+        e2.innerHTML = originals[i].html;
+        e2.setAttribute("style", originals[i].style);
+      });
+      this.chars = [];
+      this.words = [];
+      this.lines = [];
+      this.isSplit = false;
+      return this;
+    };
+    SplitText2.create = function create(element, vars) {
+      return new SplitText2(element, vars);
+    };
+    return SplitText2;
+  }();
+  SplitText.version = "3.12.5";
+  SplitText.register = _initCore7;
+
+  // src/trend_tracker.js
+  gsapWithCSS.registerPlugin(ScrollTrigger2, DrawSVGPlugin, SplitText, Flip);
   gsapWithCSS.config({
     nullTargetWarn: false
   });
@@ -6883,6 +8865,7 @@
     ease: "cubic-bezier(.22,.6,.36,1)"
   });
   var lenis;
+  var screenHeight = window.innerHeight;
   var html = document.documentElement;
   function handleScroll() {
     lenis = new Lenis({
@@ -6899,9 +8882,12 @@
       lenis.raf(time);
       requestAnimationFrame(raf);
     }
+    lenis.on("scroll", () => {
+      ScrollTrigger2.refresh();
+    });
     requestAnimationFrame(raf);
   }
-  function handleAnimation() {
+  function handleRegularAnimation() {
     let staggerElements = document.querySelectorAll("[anim-stagger]");
     if (staggerElements.length > 0) {
       staggerElements.forEach((element) => {
@@ -6914,19 +8900,19 @@
       }
       let childrens = element.querySelectorAll(children);
       gsapWithCSS.set(childrens, {
-        y: element.getAttribute("from-y") || "1rem",
+        y: element.getAttribute("from-y") || "2rem",
         opacity: opacityValue || 0
       });
       ScrollTrigger2.batch(childrens, {
         onEnter: (target) => {
           gsapWithCSS.to(target, {
             autoAlpha: 1,
-            duration: element.getAttribute("data-duration") || 1.3,
+            duration: element.getAttribute("data-duration") || 1.5,
             y: "0rem",
             opacity: 1,
             stagger: {
               from: element.getAttribute("stagger-from") || "start",
-              each: element.getAttribute("stagger-amount") || 0.25
+              each: element.getAttribute("stagger-amount") || 0.15
             },
             ease: element.getAttribute("data-easing") || "power3.out",
             scrollTrigger: {
@@ -6945,9 +8931,9 @@
       let y = element.getAttribute("from-y");
       let easing = element.getAttribute("data-easing");
       easing = easing || "power3.out";
-      delay = delay || 0;
-      duration = duration || 1.2;
-      y = y || "30";
+      delay = delay || 0.15;
+      duration = duration || 1.5;
+      y = y || "2rem";
       gsapWithCSS.fromTo(
         element,
         { y, opacity: 0 },
@@ -6956,10 +8942,37 @@
           y: "0%",
           opacity: 1,
           ease: easing,
-          scrollTrigger: element,
+          scrollTrigger: {
+            trigger: element,
+            start: element.getAttribute("scrollTrigger-start") || "top 95%",
+            markers: element.getAttribute("anim-markers") || false
+          },
           delay
         }
       );
+    }
+    if (window.innerWidth > 768) {
+      let parallaxElements = document.querySelectorAll("[parallax-element]");
+      parallaxElements.forEach((element) => {
+        gsapWithCSS.fromTo(
+          element,
+          {
+            y: "-10%",
+            scale: 1.1
+          },
+          {
+            y: "10%",
+            scale: 1.1,
+            scrollTrigger: {
+              trigger: element,
+              start: "top bottom",
+              end: "bottom -50%",
+              scrub: 0.2,
+              markers: false
+            }
+          }
+        );
+      });
     }
     document.querySelectorAll("[anim-element]").forEach((ele) => {
       animateElement(ele);
@@ -6981,360 +8994,563 @@
       );
     });
   }
-  function init4() {
+  function init5() {
     html.classList.add("ready");
-    window.onload = function() {
-      lenis.scrollTo(0, { duration: 0, easing: [0.25, 0, 0.35, 1] });
-    };
     handleScroll();
     handleCode();
-    handleAnimation();
-    handleSwiper();
+    handleRegularAnimation();
   }
-  init4();
-  function loadScript(url) {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = url;
-      script.onload = resolve;
-      script.onerror = reject;
-      document.querySelector("main").appendChild(script);
-    });
-  }
-  function handleSwiper() {
-    if (!document.querySelector(".swiper"))
-      return;
-    loadScript("https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.js").then(() => {
-      if (document.querySelector(".swiper.is-testimonial")) {
-        new Swiper(".swiper.is-testimonial", {
-          slidesPerView: window.innerWidth > 767 ? "1" : "auto",
-          effect: window.innerWidth > 767 ? "fade" : "slide",
-          spaceBetween: 8,
-          grabCursor: true,
-          speed: 500,
-          navigation: {
-            nextEl: ".swiper.is-testimonial [swiper-button-next]",
-            prevEl: ".swiper.is-testimonial [swiper-button-prev]"
-          }
-        });
-        document.querySelectorAll(".slider-btn.is-next").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            document.querySelector(".swiper.is-testimonial [swiper-button-next]").click();
-          });
-        });
-        document.querySelectorAll(".slider-btn.is-prev").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            document.querySelector(".swiper.is-testimonial [swiper-button-prev]").click();
-          });
-        });
-        document.querySelectorAll(".swiper.is-testimonial .swiper-slide").forEach((slide) => {
-          if (slide.querySelector("[slider-slide-label]")) {
-            slide.querySelector("[slider-slide-label]").innerHTML = slide.getAttribute("aria-label");
-          }
-        });
-      }
-      if (document.querySelector("[supplier-slider-wrapper]")) {
-        new Swiper("[supplier-slider-wrapper] .swiper", {
-          slidesPerView: window.innerWidth > 767 ? 3 : "auto",
-          effect: "slide",
-          spaceBetween: window.innerWidth > 767 ? 32 : 8,
-          grabCursor: true,
-          speed: 500,
-          on: {
-            slideChange: function() {
-              document.querySelector("[supplier-slider-wrapper] [current-slide]").innerHTML = this.activeIndex + 1;
-            },
-            init: function() {
-              document.querySelector("[supplier-slider-wrapper] [total-slides]").innerHTML = this.slides.length;
-            }
-          },
-          navigation: {
-            nextEl: "[supplier-slider-wrapper] [swiper-button-next]",
-            prevEl: "[supplier-slider-wrapper] [swiper-button-prev]"
-          }
-        });
-      }
-    }).catch((error) => {
-      console.error("Error loading Swiper:", error);
-    });
-  }
+  document.addEventListener("DOMContentLoaded", init5);
   function handleCode() {
-    (() => {
-      document.querySelectorAll(".navigation-block [scroll-to]").forEach((btn) => {
-        if (window.innerWidth < 767) {
-          document.querySelector(".navigation-block .overview-btn").addEventListener("click", () => {
-            if (!document.querySelector(".navigation-block").classList.contains("open")) {
-              document.querySelector(".navigation-block").classList.add("open");
-            } else {
-              document.querySelector(".navigation-block").classList.remove("open");
-            }
-          });
-          document.querySelector("[navigation-block-links-mobile]").appendChild(btn);
-          document.querySelectorAll("[navigation-block-links-mobile] [scroll-to]").forEach((btn2) => {
-            btn2.addEventListener("click", () => {
-              document.querySelector(".navigation-block").classList.remove("open");
-            });
-          });
+    function animateCounter(textElement, currentValue, newValue) {
+      gsapWithCSS.to(
+        { value: currentValue },
+        {
+          value: newValue,
+          duration: 1,
+          ease: "power2.out",
+          onUpdate: function() {
+            textElement.textContent = Math.round(this.targets()[0].value);
+          }
         }
-        if (btn.getAttribute("scroll-to")) {
-          btn.addEventListener("click", () => {
-            document.querySelectorAll(".navigation-block [scroll-to]").forEach((btn2) => btn2.classList.remove("active"));
-            btn.classList.add("active");
-            lenis.scrollTo(
-              document.querySelector(`[anchor-navigation-title= "${btn.getAttribute("scroll-to")}"]`)
-            );
-            if (window.innerWidth < 767) {
-              document.querySelector("[navigation-block-text]").innerHTML = btn.innerHTML;
+      );
+    }
+    function drawSVGPaths(svgElement, duration = 2, staggerTime = 0.25, easeType = "power2.inOut") {
+      const paths = svgElement.querySelectorAll("path[anim-path]");
+      const delay = svgElement.getAttribute("data-delay") ? parseFloat(svgElement.getAttribute("data-delay")) : 0;
+      gsapWithCSS.fromTo(
+        paths,
+        { drawSVG: "0%" },
+        {
+          drawSVG: "100%",
+          duration,
+          stagger: staggerTime,
+          ease: easeType,
+          scrollTrigger: {
+            trigger: svgElement
+          },
+          delay
+        }
+      );
+    }
+    (() => {
+      document.querySelectorAll("[anim-svg-path]").forEach((svg) => {
+        drawSVGPaths(svg);
+      });
+    })();
+    (() => {
+      if (!document.querySelector(".takeways-item"))
+        return;
+      document.querySelectorAll(".takeways-item").forEach((item) => {
+        if (window.matchMedia("(min-width: 768px)").matches) {
+          let tl = gsapWithCSS.timeline({ scrollTrigger: { trigger: item } });
+          tl.from(item, { width: "70%", duration: 1 }).from(
+            item.querySelectorAll("[anim-child]"),
+            {
+              opacity: 0,
+              y: "2rem",
+              stagger: 0.1
+            },
+            "-=0.2"
+          );
+        } else {
+          let tl = gsapWithCSS.timeline({
+            scrollTrigger: {
+              trigger: item.querySelector(".takeways-item_text-block")
             }
           });
-        } else {
-          btn.remove();
+          tl.from(item.querySelector(".takeways-item_text-block"), {
+            height: "3rem",
+            duration: 0.65
+          }).from(
+            item.querySelectorAll("[anim-child]"),
+            {
+              opacity: 0,
+              y: "2rem",
+              stagger: 0.1
+            },
+            "-=0.2"
+          );
         }
       });
-      (() => {
+    })();
+    (() => {
+      if (!document.querySelector("[activities-tab]"))
+        return;
+      let explorersValue = 0;
+      let travelersValue = 0;
+      let activityBtns = document.querySelectorAll("[activities-tab] [activity-tab-btn]");
+      let explorersValueText = document.querySelector("[activities-tab] #explorers-value");
+      let travelersValueText = document.querySelector("[activities-tab] #travelers-value");
+      activityBtns.forEach((button) => {
+        button.addEventListener("click", () => {
+          activityBtns.forEach((btn) => btn.classList.remove("selected"));
+          button.classList.add("selected");
+          const newExplorersValue = parseInt(button.getAttribute("data-explorers-value"), 10);
+          const newTravelersValue = parseInt(button.getAttribute("data-travelers-value"), 10);
+          animateCounter(explorersValueText, explorersValue, newExplorersValue);
+          explorersValue = newExplorersValue;
+          animateCounter(travelersValueText, travelersValue, newTravelersValue);
+          travelersValue = newTravelersValue;
+        });
+      });
+    })();
+    (() => {
+      function animateCounter2(target, startValue, endValue, delay) {
+        ScrollTrigger2.create({
+          trigger: target,
+          // Trigger when the target scrolls into view
+          start: "top 80%",
+          // Start when the top of the element is at 80% of the viewport
+          onEnter: () => {
+            gsapWithCSS.to(
+              { count: startValue },
+              {
+                count: endValue,
+                delay: delay ? parseFloat(delay) : 0,
+                // Handle delay, convert to number if it exists
+                duration: 2,
+                ease: "power2.out",
+                onUpdate: function() {
+                  target.innerText = Math.round(this.targets()[0].count);
+                }
+              }
+            );
+          },
+          once: true
+          // Trigger only once
+        });
+      }
+      document.querySelectorAll("[anim-count-up]").forEach((element) => {
+        let endValue = parseInt(element.innerHTML, 10);
+        let delay = element.getAttribute("data-delay");
+        element.innerHTML = "0";
+        animateCounter2(element, 0, endValue, delay);
+      });
+    })();
+    (() => {
+      if (!document.querySelector("[scale-up-anim]"))
+        return;
+      document.querySelectorAll("[scale-up-anim]").forEach((ele) => {
         gsapWithCSS.fromTo(
-          ".navigation-block",
-          { opacity: 0, y: "40", pointerEvents: "none" },
+          ele,
+          { scale: 0 },
           {
-            opacity: 1,
-            y: "0",
-            pointerEvents: "auto",
-            scrollTrigger: {
-              trigger: "[section-show-navigation]",
-              start: "top 35%",
-              toggleActions: "play none none reverse"
-            }
+            scrollTrigger: ele,
+            scale: 1,
+            duration: 1,
+            delay: ele.getAttribute("data-delay") ? ele.getAttribute("data-delay") : 0
           }
         );
-        ScrollTrigger2.create({
-          trigger: "footer",
-          start: "top center",
-          end: "bottom center",
-          onEnter: () => gsapWithCSS.to(".navigation-block", {
-            opacity: 0,
-            y: "40",
-            pointerEvents: "none",
-            duration: 0.5
-          }),
-          onLeaveBack: () => gsapWithCSS.to(".navigation-block", {
-            opacity: 1,
-            y: "0",
-            pointerEvents: "auto",
-            duration: 0.5
-          }),
-          onEnterBack: () => gsapWithCSS.to(".navigation-block", {
-            opacity: 0,
-            y: "40",
-            pointerEvents: "none",
-            duration: 0.5
-          }),
-          onLeave: () => gsapWithCSS.to(".navigation-block", {
-            opacity: 1,
-            y: "0",
-            pointerEvents: "auto",
-            duration: 0.5
-          })
-        });
-      })();
-      (() => {
-        document.querySelectorAll("[anchor-navigation-title]").forEach((item) => {
-          window.addEventListener("scroll", () => {
-            let navigationTitle = item.getAttribute("anchor-navigation-title");
-            let rect2 = item.getBoundingClientRect();
-            let offsetTop = rect2.top + window.pageYOffset;
-            let topDifference = offsetTop - window.scrollY;
-            if (topDifference < 500 & topDifference > 0) {
-              document.querySelectorAll(
-                ".navigation-block [scroll-to] , [navigation-block-links-mobile] [scroll-to]"
-              ).forEach((ele) => ele.classList.remove("active"));
-              document.querySelectorAll(`.navigation-block [scroll-to="${navigationTitle}"]`).forEach((item2) => item2.classList.add("active"));
-              document.querySelector("[navigation-block-text]").innerHTML = document.querySelector(
-                `.navigation-block [scroll-to="${navigationTitle}"]`
-              ).innerHTML;
-            }
-          });
-        });
-      })();
+      });
     })();
     (() => {
-      document.addEventListener("click", () => {
-        lenis.resize();
-        ScrollTrigger2.update();
-        ScrollTrigger2.refresh();
+      let chartsSection = document.querySelector("[section-tt-charts]");
+      if (!chartsSection)
+        return;
+      document.querySelectorAll("[tt-charts_content-track] [charts-anim-element] path[anim-path]").forEach((path) => {
+        gsapWithCSS.set(path, { drawSVG: "0%" });
       });
-      const sections = document.querySelectorAll("section, footer");
-      sections.forEach((section) => {
-        ScrollTrigger2.create({
-          trigger: section,
-          onEnter: () => {
-            lenis.resize();
-            ScrollTrigger2.update();
-            ScrollTrigger2.refresh();
+      gsapWithCSS.set("[section-tt-charts] [charts-anim-element]", { opacity: 0, y: "2rem" });
+      let tl = gsapWithCSS.timeline({
+        scrollTrigger: {
+          trigger: "[tt-charts_content-track]",
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1.24
+        }
+      });
+      tl.to('[tt-charts_content="1"] [charts-anim-element]', {
+        opacity: 1,
+        y: "0rem",
+        stagger: 0.15
+      }).to('[tt-charts_content="1"] [charts-anim-svg-path] path[anim-path]', {
+        drawSVG: "100%",
+        duration: 1
+      }).to('[tt-charts_content="1"] [charts-anim-element]', {
+        delay: 1,
+        opacity: 0,
+        y: "-2rem",
+        stagger: 0.15
+      }).to('[tt-charts_content="2"] [charts-anim-element]', {
+        opacity: 1,
+        y: "0rem",
+        stagger: 0.15
+      }).to('[tt-charts_content="2"] [charts-anim-svg-path] path[anim-path]', {
+        drawSVG: "100%",
+        duration: 1
+      }).to('[tt-charts_content="2"] [charts-anim-element]', {
+        delay: 1,
+        opacity: 0,
+        y: "-2rem",
+        stagger: 0.15
+      }).to('[tt-charts_content="3"] [charts-anim-element]', {
+        opacity: 1,
+        y: "0rem",
+        stagger: 0.15
+      }).to("nothing", { delay: 1, opacity: 0 });
+      gsapWithCSS.from('[tt-charts_content="3"] .graph-element-wrapper', {
+        height: "0rem",
+        duration: 1.55,
+        ease: "power4.out",
+        scrollTrigger: {
+          trigger: "[tt-charts_content-track]",
+          start: "80% bottom"
+        },
+        onStart: () => {
+          document.querySelectorAll("[count-up-element]").forEach((element) => {
+            let endValue = parseInt(element.innerHTML, 10);
+            let delay = element.getAttribute("data-delay");
+            element.innerHTML = "0";
+            animateCounter(element, 0, endValue, delay);
+          });
+        }
+      });
+    })();
+    (() => {
+      let influenceTab = document.querySelector("[infulence-tabs-component]");
+      if (!influenceTab)
+        return;
+      let tabBtns = influenceTab.querySelectorAll("[influence-btn]");
+      let maxBarWidth = parseInt(influenceTab.getAttribute("max-bar-width"), 10);
+      tabBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          tabBtns.forEach((btn2) => btn2.classList.remove("selected"));
+          btn.classList.add("selected");
+          let btnID = btn.getAttribute("id");
+          let tabsBarsWrapper = influenceTab.querySelectorAll(`[data-${btnID}]`);
+          tabsBarsWrapper.forEach((barWrapper) => {
+            let barContent = barWrapper.getAttribute(`data-${btnID}`);
+            let parts = barContent.split("=");
+            let barLabelText = parts[0].trim();
+            barWrapper.querySelector("[bar-label]").innerHTML = barLabelText;
+            let barPercentage = parseInt(parts[1].trim(), 10);
+            let barWidth = barPercentage / maxBarWidth * 100;
+            let bar = barWrapper.querySelector(".influence-bar");
+            gsapWithCSS.to(bar, { width: barWidth + "%", duration: 1, ease: "ease" });
+            let barPercentageText = barWrapper.querySelector(".bar-percentage-text");
+            animateCounter(barPercentageText, barPercentageText.innerHTML, barPercentage);
+          });
+        });
+      });
+      gsapWithCSS.to("nothing", {
+        scrollTrigger: { trigger: "[infulence-tabs-component]", start: "top bottom" },
+        onStart: () => {
+          influenceTab.querySelector("[influence-btn].selected").click();
+        }
+      });
+    })();
+    (() => {
+      if (!document.querySelector("[cards-blocks]"))
+        return;
+      gsapWithCSS.utils.toArray("[cards-blocks] .card-block").forEach((card) => {
+        gsapWithCSS.from(card, {
+          y: "40rem",
+          scale: 0.75,
+          opacity: 0,
+          duration: 1.5,
+          ease: "ease",
+          scrollTrigger: {
+            trigger: card,
+            start: "-=200% bottom"
           }
         });
       });
     })();
     (() => {
-      if (window.innerWidth < 767)
+      if (!document.querySelector("[section-globe-cards]"))
         return;
-      gsapWithCSS.to("[logos-block-1]", {
-        x: "30%",
-        duration: 2,
-        ease: "ease",
+      let tl = gsapWithCSS.timeline({
         scrollTrigger: {
-          trigger: ".section-booking",
-          scrub: 1,
-          start: "top 50%",
-          end: "bottom bottom"
+          trigger: "[section-globe-cards]",
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1.5
         }
       });
-      gsapWithCSS.to("[logos-block-2]", {
-        x: "-30%",
-        duration: 2,
+      tl.from("[section-globe-cards_heading]", { opacity: 0, scale: 0, ease: "ease" }, "<").from("[globe-cards-wrapper] ._03", { y: screenHeight / 1.25, ease: "ease", rotate: "0deg" }).from("[globe-cards-wrapper] ._02", { y: screenHeight / 1.25, ease: "ease", rotate: "0deg" }).from("[globe-cards-wrapper] ._01", { y: screenHeight / 1.25, ease: "ease", rotate: "0deg" });
+    })();
+    (() => {
+      if (!document.querySelector("[section-tt-explorer]"))
+        return;
+      let mySplitText = new SplitText("[split-text]", { type: "words,chars" });
+      let tl = gsapWithCSS.timeline({
         ease: "ease",
         scrollTrigger: {
-          trigger: ".section-booking",
-          scrub: 1,
-          start: "top 50%",
-          end: "bottom bottom"
+          trigger: "[section-tt-explorer]",
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1.24
+        }
+      });
+      tl.from(".section-tt-explorer_block1 [anim-child]", {
+        opacity: 0,
+        y: "2rem",
+        stagger: 0.25
+      }).to(mySplitText.words, { color: "#1a2b49", stagger: 0.05 }).to(".section-tt-explorer_block1 [anim-child]", {
+        opacity: 0,
+        y: -screenHeight / 3,
+        stagger: 0.05,
+        scale: 0.5
+      }).from(".section-tt-explorer_block2", { y: "40%" }, "-=0.5").from(".section-tt-explorer_block2 [anim-child]", { opacity: 0, scale: 0.5 }, "<").to(".section-tt-explorer_block2 [anim-child]", { opacity: 0.16 }).to("[section-tt-explorer] .tt-explorer_circles-wrapper", {
+        xPercent: -100
+      });
+      gsapWithCSS.from("[section-tt-explorer] .tt-explorer_circles-wrapper .tt-explorer_circle", {
+        ease: "ease",
+        scale: 0.5,
+        stagger: 0.25,
+        scrollTrigger: {
+          trigger: "[section-tt-explorer]",
+          start: "87% bottom",
+          end: "bottom bottom",
+          scrub: 1.24
         }
       });
     })();
     (() => {
-      document.querySelectorAll("[count-up]").forEach((ele) => {
-        gsapWithCSS.from(ele, {
-          textContent: 0,
-          // start from 0
-          duration: 3,
-          scrollTrigger: ele,
-          snap: { textContent: 1 }
-          // increment by 1
-        });
-      });
-    })();
-    (() => {
-      const tl = gsapWithCSS.timeline();
-      tl.from("[supply-hero-image-circle]", {
-        width: "50%",
-        duration: 1.35,
-        ease: "back.out(0.8)"
-      }).from(
-        "[supply-hero-image]",
+      gsapWithCSS.fromTo(
+        "[help-center-block] .help-items-list",
+        { y: "4rem" },
         {
-          scale: 3,
-          duration: 1.35,
-          ease: "back.out(0.8)"
-        },
-        "<"
-      ).from(
-        "[supply-hero-mobile-mockup]",
+          y: "-4rem",
+          scrollTrigger: {
+            trigger: "[help-center-block]",
+            start: "top bottom",
+            bottom: "bottom bottom",
+            scrub: 5
+          }
+        }
+      );
+      gsapWithCSS.fromTo(
+        "[growth-hub-block] .media-blocks-list",
+        { x: "9rem" },
         {
-          y: "20%",
-          duration: 1.35,
-          opacity: 0,
-          ease: "back.out(0.8)"
-        },
-        "<"
-      ).from(
-        "[supply-hero-item-1]",
+          x: "-9rem",
+          duration: 5,
+          scrollTrigger: {
+            trigger: "[growth-hub-block]",
+            start: "top bottom",
+            bottom: "bottom bottom",
+            scrub: 5
+          }
+        }
+      );
+      gsapWithCSS.fromTo(
+        "[media-assets-block] .media-blocks-list",
+        { x: "-3rem" },
         {
-          x: "-40%",
-          duration: 1.35,
-          opacity: 0,
-          delay: 0.15,
-          ease: "back.out(0.8)"
-        },
-        "<"
-      ).from(
-        "[supply-hero-item-2]",
-        {
-          x: "40%",
-          duration: 1.35,
-          opacity: 0,
-          delay: 0.15,
-          ease: "back.out(0.8)"
-        },
-        "<"
+          x: "3rem",
+          duration: 5,
+          scrollTrigger: {
+            trigger: "[media-assets-block]",
+            start: "top bottom",
+            bottom: "bottom bottom",
+            scrub: 5
+          }
+        }
       );
     })();
     (() => {
-      document.querySelectorAll("[point-grid]").forEach((grid) => {
-        gsapWithCSS.from(grid.querySelectorAll(".point-number-block , .point-text-block"), {
-          y: "1.5rem",
-          delay: grid.getAttribute("data-delay"),
-          opacity: 0,
-          stagger: 0.2,
-          ease: "cubic-bezier(.22,.6,.36,1)",
-          duration: 0.55,
-          scrollTrigger: grid
+      let form = document.querySelector("[get-access-form]");
+      if (!form)
+        return;
+      const inputField = document.querySelector("#First-Name");
+      const placeholderText = inputField.getAttribute("placeholder");
+      inputField.setAttribute("placeholder", "");
+      function typeEffect(element, text, delay = 100) {
+        let index = 0;
+        let caretVisible = true;
+        let caretInterval;
+        function type() {
+          if (index < text.length) {
+            element.placeholder = text.substring(0, index) + (caretVisible ? "|" : "");
+            index++;
+            setTimeout(type, delay);
+          } else {
+            blinkCaret();
+          }
+        }
+        function blinkCaret() {
+          caretInterval = setInterval(() => {
+            caretVisible = !caretVisible;
+            element.placeholder = text + (caretVisible ? "|" : "");
+          }, 500);
+        }
+        type();
+        inputField.addEventListener("focus", () => {
+          clearInterval(caretInterval);
+          caretVisible = false;
+          element.placeholder = text;
         });
-        gsapWithCSS.from(grid.querySelectorAll(".border"), {
-          width: "0%",
-          delay: grid.getAttribute("data-delay"),
-          duration: 1.25,
-          stagger: 0.8,
-          ease: "cubic-bezier(.22,.6,.36,1)",
-          scrollTrigger: grid
+        inputField.addEventListener("blur", () => {
+          caretVisible = true;
+          blinkCaret();
+        });
+      }
+      ScrollTrigger2.create({
+        trigger: inputField,
+        start: "top 80%",
+        onEnter: () => {
+          typeEffect(inputField, placeholderText);
+        },
+        once: true
+      });
+      let prevBtn = form.querySelector("[form-prev-btn]");
+      let nextBtn = form.querySelector("[form-next-btn]");
+      let submitBtn = form.querySelector("[form-submit-btn]");
+      let prevBlock = form.querySelector("[form-prev-step-block]");
+      let currentBlock = form.querySelector("[form-current-step-block]");
+      let nextBlock = form.querySelector("[form-next-step-block]");
+      submitBtn.addEventListener("click", () => {
+        form.querySelector("#submit-btn").click();
+      });
+      function updateButtonStates() {
+        if (prevBlock.children.length === 0) {
+          prevBtn.setAttribute("disabled", "");
+        } else {
+          prevBtn.removeAttribute("disabled");
+        }
+        if (nextBlock.children.length === 0 || !isCurrentBlockValid()) {
+          nextBtn.setAttribute("disabled", "");
+          if (isCurrentBlockValid()) {
+            nextBtn.removeAttribute("disabled");
+          }
+        } else {
+          nextBtn.removeAttribute("disabled");
+        }
+        if (nextBlock.children.length === 0) {
+          submitBtn.classList.remove("hide");
+          nextBtn.classList.add("hide");
+          if (isCurrentBlockValid()) {
+            submitBtn.removeAttribute("disabled");
+          } else {
+            submitBtn.setAttribute("disabled", "");
+          }
+        } else {
+          submitBtn.classList.add("hide");
+          nextBtn.classList.remove("hide");
+        }
+      }
+      function isCurrentBlockValid() {
+        let requiredFields = currentBlock.querySelectorAll(
+          'input[required], select[required], input[type="checkbox"][required]'
+        );
+        for (let field of requiredFields) {
+          if (field.getAttribute("type") === "checkbox") {
+            let checkboxGroup = currentBlock.querySelectorAll(
+              `input[type="checkbox"][name="${field.name}"]`
+            );
+            let isChecked = Array.from(checkboxGroup).some((checkbox) => checkbox.checked);
+            if (!isChecked) {
+              return false;
+            }
+          } else if (field.tagName === "SELECT") {
+            if (!field.value || field.value === "") {
+              return false;
+            }
+          } else if (field.getAttribute("type") === "email") {
+            let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(field.value)) {
+              return false;
+            }
+          } else {
+            if (!field.value.trim()) {
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+      function handleNextClick() {
+        let state = Flip.getState(".form-step");
+        prevBlock.appendChild(currentBlock.querySelector(".form-step"));
+        currentBlock.appendChild(nextBlock.querySelector(".form-step"));
+        Flip.from(state, {
+          duration: 0.75,
+          ease: "power1.inOut",
+          stagger: 0.05
+        });
+        updateButtonStates();
+      }
+      function handlePrevClick() {
+        let state = Flip.getState(".form-step");
+        currentBlock.appendChild(prevBlock.querySelector(".form-step:last-child"));
+        nextBlock.prepend(currentBlock.querySelector(".form-step"));
+        Flip.from(state, {
+          duration: 0.75,
+          ease: "power1.inOut",
+          stagger: 0.05
+        });
+        updateButtonStates();
+      }
+      nextBtn.addEventListener("click", handleNextClick);
+      prevBtn.addEventListener("click", handlePrevClick);
+      currentBlock.addEventListener("input", updateButtonStates);
+      currentBlock.addEventListener("change", updateButtonStates);
+      updateButtonStates();
+    })();
+    (() => {
+      let langToggle = document.querySelector(".lang-toggle");
+      if (!langToggle)
+        return;
+      let langDropdown = langToggle.closest(".lang-dropdown");
+      langToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        langDropdown.classList.toggle("open");
+      });
+      document.addEventListener("click", (event) => {
+        if (!langDropdown.contains(event.target)) {
+          langDropdown.classList.remove("open");
+        }
+      });
+    })();
+    document.querySelector("[scrollToTop]").addEventListener("click", () => {
+      lenis.scrollTo("top", { duration: 2 });
+      if (footer2row && window.innerWidth > 991) {
+        setTimeout(() => {
+          gsapWithCSS.set(footer2row, { y: "-100%" });
+        }, 1500);
+      }
+    });
+    (() => {
+      if (!document.querySelector("[anim-section-clipPath]"))
+        return;
+      gsapWithCSS.to("[anim-section-clipPath]", {
+        duration: 1,
+        scrollTrigger: {
+          trigger: "[anim-section-clipPath]",
+          start: "80% center",
+          end: "+=250",
+          scrub: 1.5
+        },
+        clipPath: window.innerWidth > 767 ? "inset(0rem round 3rem)" : "inset(0rem round 0.8rem)"
+      });
+      document.querySelectorAll("[anim-section-clipPath-into-view]").forEach((section) => {
+        gsapWithCSS.to(section, {
+          duration: 1,
+          scrollTrigger: {
+            trigger: section,
+            start: section.getAttribute("start-at") ? section.getAttribute("start-at") : "top top",
+            //   end: section.getAttribute('end-at') ? section.getAttribute('end-at') : 'bottom bottom',
+            scrub: 1.5
+          },
+          clipPath: window.innerWidth > 767 ? "inset(1.25rem round 3rem)" : "inset(0rem round 0.8rem)"
         });
       });
     })();
-    FooterScroll();
-    function FooterScroll() {
-      let footer2row = document.querySelector(".footer-row-2");
-      document.querySelector("[scrollToTop]").addEventListener("click", () => {
-        lenis.scrollTo("top", { duration: 2 });
-        if (footer2row && window.innerWidth > 991) {
-          setTimeout(() => {
-            gsapWithCSS.set(footer2row, { y: "-100%" });
-          }, 1500);
+    (() => {
+      gsapWithCSS.to(".section-average-traveler", {
+        opacity: 0,
+        y: "20%",
+        scale: 0.85,
+        scrollTrigger: {
+          trigger: ".section-imgs",
+          start: "top 90%",
+          end: "bottom bottom",
+          scrub: 1.25
         }
       });
-      if (footer2row && window.innerWidth > 991) {
-        let FooterScroll2 = gsapWithCSS.fromTo(
-          footer2row,
-          { y: "-100%" },
-          {
-            y: "0%",
-            ease: "linear"
-          }
-        );
-        ScrollTrigger2.create({
-          trigger: ".footer-row-2",
-          start: `70% ${window.innerHeight - footer2row.scrollHeight + 200}`,
-          end: `10% ${window.innerHeight - footer2row.scrollHeight - footer2row.scrollHeight}`,
-          animation: FooterScroll2,
-          scrub: 2
-        });
-      }
-    }
-    handleAccordion();
-    function handleAccordion() {
-      let accordions = document.querySelectorAll("[accordion]");
-      if (accordions.length < 1)
-        return;
-      accordions.forEach((accordion) => {
-        let accordionHead = accordion.querySelector("[accordion-head]");
-        let accordionBody = accordion.querySelector("[accordion-body]");
-        gsapWithCSS.set(accordionBody, { height: "0px" });
-        accordionHead.addEventListener("click", () => {
-          if (accordion.classList.contains("open")) {
-            gsapWithCSS.to(accordionBody, { height: "0px", duration: 0.5, ease: "power1.inOut" });
-            accordion.classList.remove("open");
-          } else {
-            accordions.forEach((element) => {
-              element.classList.remove("open");
-              gsapWithCSS.to(element.querySelector("[accordion-body]"), {
-                height: "0px",
-                duration: 0.5,
-                ease: "power1.inOut"
-              });
-            });
-            accordion.classList.add("open");
-            gsapWithCSS.to(accordionBody, { height: "auto", duration: 0.5, ease: "power1.inOut" });
-          }
-        });
-      });
-    }
+    })();
   }
 })();
 /*! Bundled license information:
@@ -7361,6 +9577,39 @@ gsap/CSSPlugin.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 
+gsap/DrawSVGPlugin.js:
+  (*!
+   * DrawSVGPlugin 3.12.5
+   * https://gsap.com
+   *
+   * @license Copyright 2008-2024, GreenSock. All rights reserved.
+   * Subject to the terms at https://gsap.com/standard-license or for
+   * Club GSAP members, the agreement issued with that membership.
+   * @author: Jack Doyle, jack@greensock.com
+  *)
+
+gsap/utils/matrix.js:
+  (*!
+   * matrix 3.12.5
+   * https://gsap.com
+   *
+   * Copyright 2008-2024, GreenSock. All rights reserved.
+   * Subject to the terms at https://gsap.com/standard-license or for
+   * Club GSAP members, the agreement issued with that membership.
+   * @author: Jack Doyle, jack@greensock.com
+  *)
+
+gsap/Flip.js:
+  (*!
+   * Flip 3.12.5
+   * https://gsap.com
+   *
+   * @license Copyright 2008-2024, GreenSock. All rights reserved.
+   * Subject to the terms at https://gsap.com/standard-license or for
+   * Club GSAP members, the agreement issued with that membership.
+   * @author: Jack Doyle, jack@greensock.com
+  *)
+
 gsap/Observer.js:
   (*!
    * Observer 3.12.5
@@ -7382,5 +9631,27 @@ gsap/ScrollTrigger.js:
    * Club GSAP members, the agreement issued with that membership.
    * @author: Jack Doyle, jack@greensock.com
   *)
+
+gsap/utils/strings.js:
+  (*!
+   * strings: 3.12.5
+   * https://gsap.com
+   *
+   * Copyright 2008-2024, GreenSock. All rights reserved.
+   * Subject to the terms at https://gsap.com/standard-license or for
+   * Club GSAP members, the agreement issued with that membership.
+   * @author: Jack Doyle, jack@greensock.com
+  *)
+
+gsap/SplitText.js:
+  (*!
+   * SplitText: 3.12.5
+   * https://gsap.com
+   *
+   * @license Copyright 2008-2024, GreenSock. All rights reserved.
+   * Subject to the terms at https://gsap.com/standard-license or for
+   * Club GSAP members, the agreement issued with that membership.
+   * @author: Jack Doyle, jack@greensock.com
+  *)
 */
-//# sourceMappingURL=landing_page.js.map
+//# sourceMappingURL=trend_tracker.js.map

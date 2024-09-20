@@ -151,6 +151,7 @@ function handleCode() {
       html.classList.add('ready');
       gsap.from('[data-anim-element]', { opacity: 0, y: '2rem', duration: 1.25, stagger: 0.25 });
     } else {
+      document.querySelector('.loading-screen').style.display = 'flex';
       let tl = gsap.timeline();
       let loadingLogo = document.querySelector('.loading-screen [loading-screen-logo]');
       tl.to(loadingLogo, { scale: 2 })
@@ -180,6 +181,7 @@ function handleCode() {
             duration: 0.65,
             ease: 'power1.inOut',
             onComplete: () => {
+              document.querySelector('.loading-screen').remove();
               html.classList.add('ready');
               gsap.from('[data-anim-element]', {
                 opacity: 0,

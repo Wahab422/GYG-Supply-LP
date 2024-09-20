@@ -263,7 +263,7 @@
     }
   };
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/gsap-core.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/gsap-core.js
   function _assertThisInitialized(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -3419,7 +3419,7 @@
   var Expo = _easeMap.Expo;
   var Circ = _easeMap.Circ;
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/CSSPlugin.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/CSSPlugin.js
   var _win2;
   var _doc2;
   var _docElement;
@@ -4520,11 +4520,11 @@
   });
   gsap.registerPlugin(CSSPlugin);
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/index.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/index.js
   var gsapWithCSS = gsap.registerPlugin(CSSPlugin) || gsap;
   var TweenMaxWithCSS = gsapWithCSS.core.Tween;
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/utils/matrix.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/utils/matrix.js
   var _doc3;
   var _win3;
   var _docElement2;
@@ -4774,7 +4774,7 @@
     return inverse ? m.inverse() : m;
   }
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/Flip.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/Flip.js
   var _id = 1;
   var _toArray;
   var gsap2;
@@ -5848,7 +5848,7 @@
   Flip.version = "3.12.5";
   typeof window !== "undefined" && window.gsap && window.gsap.registerPlugin(Flip);
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/Observer.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/Observer.js
   function _defineProperties(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
@@ -6319,7 +6319,7 @@
   };
   _getGSAP() && gsap3.registerPlugin(Observer);
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/ScrollTrigger.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/ScrollTrigger.js
   var gsap4;
   var _coreInitted3;
   var _win5;
@@ -8332,6 +8332,7 @@
         html.classList.add("ready");
         gsapWithCSS.from("[data-anim-element]", { opacity: 0, y: "2rem", duration: 1.25, stagger: 0.25 });
       } else {
+        document.querySelector(".loading-screen").style.display = "flex";
         let tl = gsapWithCSS.timeline();
         let loadingLogo = document.querySelector(".loading-screen [loading-screen-logo]");
         tl.to(loadingLogo, { scale: 2 }).call(() => {
@@ -8354,6 +8355,7 @@
             duration: 0.65,
             ease: "power1.inOut",
             onComplete: () => {
+              document.querySelector(".loading-screen").remove();
               html.classList.add("ready");
               gsapWithCSS.from("[data-anim-element]", {
                 opacity: 0,

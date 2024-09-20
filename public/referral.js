@@ -263,7 +263,7 @@
     }
   };
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/gsap-core.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/gsap-core.js
   function _assertThisInitialized(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -3419,7 +3419,7 @@
   var Expo = _easeMap.Expo;
   var Circ = _easeMap.Circ;
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/CSSPlugin.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/CSSPlugin.js
   var _win2;
   var _doc2;
   var _docElement;
@@ -4520,11 +4520,11 @@
   });
   gsap.registerPlugin(CSSPlugin);
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/index.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/index.js
   var gsapWithCSS = gsap.registerPlugin(CSSPlugin) || gsap;
   var TweenMaxWithCSS = gsapWithCSS.core.Tween;
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/Observer.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/Observer.js
   function _defineProperties(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
@@ -4995,7 +4995,7 @@
   };
   _getGSAP() && gsap2.registerPlugin(Observer);
 
-  // node_modules/.pnpm/gsap@3.12.5/node_modules/gsap/ScrollTrigger.js
+  // node_modules/.pnpm/gsap@file+gsap-bonus.tgz/node_modules/gsap/ScrollTrigger.js
   var gsap3;
   var _coreInitted3;
   var _win4;
