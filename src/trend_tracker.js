@@ -32,9 +32,15 @@ function handleScroll() {
     lenis.raf(time);
     requestAnimationFrame(raf);
   }
-  lenis.on('scroll', () => {
-    ScrollTrigger.refresh();
-  });
+  if (window.innerWidth > 767) {
+    lenis.on('scroll', () => {
+      ScrollTrigger.refresh();
+    });
+  } else {
+    document.addEventListener('touchstart', function (event) {
+      ScrollTrigger.refresh();
+    });
+  }
   requestAnimationFrame(raf);
 }
 
@@ -321,6 +327,15 @@ function handleCode() {
   (() => {
     let chartsSection = document.querySelector('[section-tt-charts]');
     if (!chartsSection) return;
+    if (window.innerWidth > 767) {
+      chartsSection
+        .querySelectorAll('[charts-anim-svg-path].for-mobile')
+        .forEach((ele) => ele.remove());
+    } else {
+      chartsSection
+        .querySelectorAll('[charts-anim-svg-path].for-desktop')
+        .forEach((ele) => ele.remove());
+    }
     // Set all the Paths to 0%
     document
       .querySelectorAll('[tt-charts_content-track] [charts-anim-element] path[anim-path]')
@@ -490,13 +505,14 @@ function handleCode() {
       .from('.section-tt-explorer_block2 [anim-child]', { opacity: 0, scale: 0.5 }, '<')
       .to('.section-tt-explorer_block2 [anim-child]', { opacity: 0.16 })
       .to('[section-tt-explorer] .tt-explorer_circles-wrapper', {
-        xPercent: -100,
+        xPercent: window.innerWidth > 767 ? -100 : 0,
+        yPercent: window.innerWidth > 767 ? 0 : -120,
       });
 
     //
     gsap.from('[section-tt-explorer] .tt-explorer_circles-wrapper .tt-explorer_circle', {
       ease: 'ease',
-      scale: 0.5,
+      scale: window.innerWidth > 767 ? 0.5 : 0.75,
       stagger: 0.25,
       scrollTrigger: {
         trigger: '[section-tt-explorer]',
@@ -554,6 +570,12 @@ function handleCode() {
   (() => {
     let form = document.querySelector('[get-access-form]');
     if (!form) return;
+    // Stop Form Submit on the Enter
+    form.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' && event.target.tagName !== 'TEXTAREA') {
+        event.preventDefault(); // Prevent the default form submission on 'Enter' key
+      }
+    });
     // Placeholder text animation
     const inputField = document.querySelector('#First-Name');
     const placeholderText = inputField.getAttribute('placeholder');
@@ -785,8 +807,7 @@ function handleCode() {
           //   end: section.getAttribute('end-at') ? section.getAttribute('end-at') : 'bottom bottom',
           scrub: 1.5,
         },
-        clipPath:
-          window.innerWidth > 767 ? 'inset(1.25rem round 3rem)' : 'inset(0rem round 0.8rem)',
+        clipPath: window.innerWidth > 767 ? 'inset(1.25rem round 3rem)' : 'inset(0rem round 0rem)',
       });
     });
   })();
@@ -805,4 +826,14 @@ function handleCode() {
     });
   })();
   //
+  (() => {
+    gsap.from('.sr-footer', {
+      yPercent: -100,
+      scrollTrigger: {
+        trigger: '.sr-footer',
+        start: 'top top',
+        scrub: true,
+      },
+    });
+  })();
 }

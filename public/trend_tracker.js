@@ -8882,9 +8882,15 @@
       lenis.raf(time);
       requestAnimationFrame(raf);
     }
-    lenis.on("scroll", () => {
-      ScrollTrigger2.refresh();
-    });
+    if (window.innerWidth > 767) {
+      lenis.on("scroll", () => {
+        ScrollTrigger2.refresh();
+      });
+    } else {
+      document.addEventListener("touchstart", function(event) {
+        ScrollTrigger2.refresh();
+      });
+    }
     requestAnimationFrame(raf);
   }
   function handleRegularAnimation() {
@@ -9148,6 +9154,11 @@
       let chartsSection = document.querySelector("[section-tt-charts]");
       if (!chartsSection)
         return;
+      if (window.innerWidth > 767) {
+        chartsSection.querySelectorAll("[charts-anim-svg-path].for-mobile").forEach((ele) => ele.remove());
+      } else {
+        chartsSection.querySelectorAll("[charts-anim-svg-path].for-desktop").forEach((ele) => ele.remove());
+      }
       document.querySelectorAll("[tt-charts_content-track] [charts-anim-element] path[anim-path]").forEach((path) => {
         gsapWithCSS.set(path, { drawSVG: "0%" });
       });
@@ -9293,11 +9304,12 @@
         stagger: 0.05,
         scale: 0.5
       }).from(".section-tt-explorer_block2", { y: "40%" }, "-=0.5").from(".section-tt-explorer_block2 [anim-child]", { opacity: 0, scale: 0.5 }, "<").to(".section-tt-explorer_block2 [anim-child]", { opacity: 0.16 }).to("[section-tt-explorer] .tt-explorer_circles-wrapper", {
-        xPercent: -100
+        xPercent: window.innerWidth > 767 ? -100 : 0,
+        yPercent: window.innerWidth > 767 ? 0 : -120
       });
       gsapWithCSS.from("[section-tt-explorer] .tt-explorer_circles-wrapper .tt-explorer_circle", {
         ease: "ease",
-        scale: 0.5,
+        scale: window.innerWidth > 767 ? 0.5 : 0.75,
         stagger: 0.25,
         scrollTrigger: {
           trigger: "[section-tt-explorer]",
@@ -9354,6 +9366,11 @@
       let form = document.querySelector("[get-access-form]");
       if (!form)
         return;
+      form.addEventListener("keydown", function(event) {
+        if (event.key === "Enter" && event.target.tagName !== "TEXTAREA") {
+          event.preventDefault();
+        }
+      });
       const inputField = document.querySelector("#First-Name");
       const placeholderText = inputField.getAttribute("placeholder");
       inputField.setAttribute("placeholder", "");
@@ -9534,7 +9551,7 @@
             //   end: section.getAttribute('end-at') ? section.getAttribute('end-at') : 'bottom bottom',
             scrub: 1.5
           },
-          clipPath: window.innerWidth > 767 ? "inset(1.25rem round 3rem)" : "inset(0rem round 0.8rem)"
+          clipPath: window.innerWidth > 767 ? "inset(1.25rem round 3rem)" : "inset(0rem round 0rem)"
         });
       });
     })();
@@ -9548,6 +9565,16 @@
           start: "top 90%",
           end: "bottom bottom",
           scrub: 1.25
+        }
+      });
+    })();
+    (() => {
+      gsapWithCSS.from(".sr-footer", {
+        yPercent: -100,
+        scrollTrigger: {
+          trigger: ".sr-footer",
+          start: "top top",
+          scrub: true
         }
       });
     })();
