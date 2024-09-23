@@ -12,6 +12,7 @@ gsap.config({
 gsap.defaults({
   ease: 'cubic-bezier(.22,.6,.36,1)',
 });
+
 let lenis;
 let screenHeight = window.innerHeight;
 const html = document.documentElement;
