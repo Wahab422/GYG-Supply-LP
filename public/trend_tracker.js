@@ -8887,11 +8887,24 @@
         ScrollTrigger2.refresh();
       });
     } else {
-      document.addEventListener("touchstart", function(event) {
-        ScrollTrigger2.refresh();
+      const sections = document.querySelectorAll("section");
+      sections.forEach((section) => {
+        ScrollTrigger2.create({
+          trigger: section,
+          start: "top bottom",
+          onEnter: () => {
+            ScrollTrigger2.refresh();
+          }
+        });
       });
     }
     requestAnimationFrame(raf);
+    document.querySelectorAll("[data-scroll-to]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        let targetSection = btn.getAttribute("data-scroll-to");
+        lenis.scrollTo(targetSection);
+      });
+    });
   }
   function handleRegularAnimation() {
     let staggerElements = document.querySelectorAll("[anim-stagger]");
@@ -9005,6 +9018,7 @@
     handleScroll();
     handleCode();
     handleRegularAnimation();
+    handleConfetti();
   }
   document.addEventListener("DOMContentLoaded", init5);
   function handleCode() {
@@ -9049,10 +9063,18 @@
         return;
       document.querySelectorAll(".takeways-item").forEach((item) => {
         if (window.matchMedia("(min-width: 768px)").matches) {
-          let tl = gsapWithCSS.timeline({ scrollTrigger: { trigger: item } });
+          let tl = gsapWithCSS.timeline({
+            scrollTrigger: {
+              trigger: item,
+              start: "top bottom",
+              end: "80% 80%",
+              scrub: 1.25
+            }
+          });
           tl.from(item, { width: "70%", duration: 1 }).from(
             item.querySelectorAll("[anim-child]"),
             {
+              delay: 0.25,
               opacity: 0,
               y: "2rem",
               stagger: 0.1
@@ -9071,6 +9093,7 @@
           }).from(
             item.querySelectorAll("[anim-child]"),
             {
+              delay: 0.25,
               opacity: 0,
               y: "2rem",
               stagger: 0.1
@@ -9166,7 +9189,7 @@
       let tl = gsapWithCSS.timeline({
         scrollTrigger: {
           trigger: "[tt-charts_content-track]",
-          start: "top top",
+          start: "top 30%",
           end: "bottom bottom",
           scrub: 1.24
         }
@@ -9178,7 +9201,7 @@
       }).to('[tt-charts_content="1"] [charts-anim-svg-path] path[anim-path]', {
         drawSVG: "100%",
         duration: 1
-      }).to('[tt-charts_content="1"] [charts-anim-element]', {
+      }).from('[tt-charts_content="1"] [label-element]', { opacity: 0, duration: 0.2 }).to('[tt-charts_content="1"] [charts-anim-element]', {
         delay: 1,
         opacity: 0,
         y: "-2rem",
@@ -9274,12 +9297,16 @@
       let tl = gsapWithCSS.timeline({
         scrollTrigger: {
           trigger: "[section-globe-cards]",
-          start: "top top",
+          start: "top 50%",
           end: "bottom bottom",
           scrub: 1.5
         }
       });
-      tl.from("[section-globe-cards_heading]", { opacity: 0, scale: 0, ease: "ease" }, "<").from("[globe-cards-wrapper] ._03", { y: screenHeight / 1.25, ease: "ease", rotate: "0deg" }).from("[globe-cards-wrapper] ._02", { y: screenHeight / 1.25, ease: "ease", rotate: "0deg" }).from("[globe-cards-wrapper] ._01", { y: screenHeight / 1.25, ease: "ease", rotate: "0deg" });
+      tl.from("[section-globe-cards_heading]", { scale: 0.5, ease: "ease" }).from(".globe-wrapper", { opacity: 0 }, "<").from(
+        "[globe-cards-wrapper] ._03",
+        { y: screenHeight / 1.25, ease: "ease", rotate: "0deg" },
+        "<"
+      ).from("[globe-cards-wrapper] ._02", { y: screenHeight / 1.25, ease: "ease", rotate: "0deg" }).from("[globe-cards-wrapper] ._01", { y: screenHeight / 1.25, ease: "ease", rotate: "0deg" });
     })();
     (() => {
       if (!document.querySelector("[section-tt-explorer]"))
@@ -9289,7 +9316,7 @@
         ease: "ease",
         scrollTrigger: {
           trigger: "[section-tt-explorer]",
-          start: "top top",
+          start: "top 30%",
           end: "bottom bottom",
           scrub: 1.24
         }
@@ -9305,7 +9332,8 @@
         scale: 0.5
       }).from(".section-tt-explorer_block2", { y: "40%" }, "-=0.5").from(".section-tt-explorer_block2 [anim-child]", { opacity: 0, scale: 0.5 }, "<").to(".section-tt-explorer_block2 [anim-child]", { opacity: 0.16 }).to("[section-tt-explorer] .tt-explorer_circles-wrapper", {
         xPercent: window.innerWidth > 767 ? -100 : 0,
-        yPercent: window.innerWidth > 767 ? 0 : -120
+        yPercent: window.innerWidth > 767 ? 0 : -120,
+        duration: 1
       });
       gsapWithCSS.from("[section-tt-explorer] .tt-explorer_circles-wrapper .tt-explorer_circle", {
         ease: "ease",
@@ -9313,7 +9341,7 @@
         stagger: 0.25,
         scrollTrigger: {
           trigger: "[section-tt-explorer]",
-          start: "87% bottom",
+          start: "72% bottom",
           end: "bottom bottom",
           scrub: 1.24
         }
@@ -9322,9 +9350,9 @@
     (() => {
       gsapWithCSS.fromTo(
         "[help-center-block] .help-items-list",
-        { y: "4rem" },
+        { y: "2rem" },
         {
-          y: "-4rem",
+          y: "-2rem",
           scrollTrigger: {
             trigger: "[help-center-block]",
             start: "top bottom",
@@ -9335,9 +9363,9 @@
       );
       gsapWithCSS.fromTo(
         "[growth-hub-block] .media-blocks-list",
-        { x: "9rem" },
+        { x: "3rem" },
         {
-          x: "-9rem",
+          x: "-3rem",
           duration: 5,
           scrollTrigger: {
             trigger: "[growth-hub-block]",
@@ -9366,15 +9394,18 @@
       let form = document.querySelector("[get-access-form]");
       if (!form)
         return;
-      form.addEventListener("keydown", function(event) {
-        if (event.key === "Enter" && event.target.tagName !== "TEXTAREA") {
-          event.preventDefault();
-        }
+      form.querySelector("#submit-btn").addEventListener("click", () => {
+        gsapWithCSS.to(form, { y: "-100%", ease: "power4.out", duration: 0.7 });
+        gsapWithCSS.to(form.closest(".steps-form-block").querySelector(".form-success"), {
+          y: "0%",
+          duration: 0.7,
+          ease: "power4.out"
+        });
       });
-      const inputField = document.querySelector("#First-Name");
+      const inputField = form.querySelector("[type-effect-anim-field]");
       const placeholderText = inputField.getAttribute("placeholder");
       inputField.setAttribute("placeholder", "");
-      function typeEffect(element, text, delay = 100) {
+      function typeEffect(element, text, delay = 50) {
         let index = 0;
         let caretVisible = true;
         let caretInterval;
@@ -9420,6 +9451,18 @@
       let nextBlock = form.querySelector("[form-next-step-block]");
       submitBtn.addEventListener("click", () => {
         form.querySelector("#submit-btn").click();
+        let pdfLink = form.parentElement.querySelector("[form-success-pdf-link]").getAttribute("href");
+        setTimeout(() => {
+          window.open(pdfLink, "_blank");
+        }, 700);
+      });
+      form.addEventListener("keydown", function(event) {
+        if (event.key === "Enter" && event.target.tagName !== "TEXTAREA") {
+          event.preventDefault();
+          if (!nextBtn.hasAttribute("disabled")) {
+            nextBtn.click();
+          }
+        }
       });
       function updateButtonStates() {
         if (prevBlock.children.length === 0) {
@@ -9507,18 +9550,20 @@
       updateButtonStates();
     })();
     (() => {
-      let langToggle = document.querySelector(".lang-toggle");
-      if (!langToggle)
+      let langToggles = document.querySelectorAll(".lang-toggle");
+      if (langToggles.length < 1)
         return;
-      let langDropdown = langToggle.closest(".lang-dropdown");
-      langToggle.addEventListener("click", (event) => {
-        event.stopPropagation();
-        langDropdown.classList.toggle("open");
-      });
-      document.addEventListener("click", (event) => {
-        if (!langDropdown.contains(event.target)) {
-          langDropdown.classList.remove("open");
-        }
+      langToggles.forEach((btn) => {
+        btn.addEventListener("click", (event) => {
+          let langDropdown = btn.closest(".lang-dropdown");
+          event.stopPropagation();
+          langDropdown.classList.toggle("open");
+          document.addEventListener("click", (event2) => {
+            if (!langDropdown.contains(event2.target)) {
+              langDropdown.classList.remove("open");
+            }
+          });
+        });
       });
     })();
     document.querySelector("[scrollToTop]").addEventListener("click", () => {
@@ -9536,11 +9581,11 @@
         duration: 1,
         scrollTrigger: {
           trigger: "[anim-section-clipPath]",
-          start: "80% center",
-          end: "+=250",
+          start: "bottom bottom",
+          end: "bottom 30%",
           scrub: 1.5
         },
-        clipPath: window.innerWidth > 767 ? "inset(0rem round 3rem)" : "inset(0rem round 0.8rem)"
+        clipPath: window.innerWidth > 767 ? "inset(0rem round 0rem 0rem 3rem 4rem)" : "inset(0rem round 0.8rem)"
       });
       document.querySelectorAll("[anim-section-clipPath-into-view]").forEach((section) => {
         gsapWithCSS.to(section, {
@@ -9551,33 +9596,100 @@
             //   end: section.getAttribute('end-at') ? section.getAttribute('end-at') : 'bottom bottom',
             scrub: 1.5
           },
-          clipPath: window.innerWidth > 767 ? "inset(1.25rem round 3rem)" : "inset(0rem round 0rem)"
+          clipPath: window.innerWidth > 767 ? "inset(1.25rem round 3rem)" : "inset(1.25rem round 2rem)"
         });
       });
     })();
     (() => {
-      gsapWithCSS.to(".section-average-traveler", {
-        opacity: 0,
-        y: "20%",
-        scale: 0.85,
-        scrollTrigger: {
-          trigger: ".section-imgs",
-          start: "top 90%",
-          end: "bottom bottom",
-          scrub: 1.25
+      if (window.matchMedia("(min-width: 768px)").matches) {
+        gsapWithCSS.from(".sr-footer", {
+          yPercent: -100,
+          scrollTrigger: {
+            trigger: ".sr-footer",
+            start: "top top",
+            scrub: true
+          }
+        });
+        gsapWithCSS.to(".section-average-traveler", {
+          opacity: 0,
+          y: "20%",
+          scale: 0.85,
+          scrollTrigger: {
+            trigger: ".section-imgs",
+            start: "top 90%",
+            end: "bottom bottom",
+            scrub: 1.25
+          }
+        });
+        let tl = gsapWithCSS.timeline({
+          scrollTrigger: {
+            trigger: ".section-imgs",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.25
+          }
+        });
+        tl.from(".explorers-img-wrapper._01", { yPercent: 30 }).from(".explorers-img-wrapper._02", { xPercent: -36 }, "<").from(".explorers-img-wrapper._03", { xPercent: 32 }, "<").from(".explorers-img-wrapper._04", { yPercent: 30 }, "<").from(".explorers-img-wrapper._05", { xPercent: 35 }, "<").from(".explorers-img-wrapper._06", { yPercent: -65 }, "<");
+        gsapWithCSS.to("[hero-img_01]", {
+          yPercent: -30,
+          duration: 25,
+          scrollTrigger: {
+            trigger: ".section-tt-takeways",
+            start: "top bottom",
+            end: "top top",
+            scrub: 1.25
+          }
+        });
+        gsapWithCSS.to("[hero-img_02]", {
+          yPercent: -80,
+          duration: 1,
+          scrollTrigger: {
+            trigger: ".section-tt-takeways",
+            start: "top bottom",
+            end: "top top",
+            scrub: 1.25
+          }
+        });
+        gsapWithCSS.to("[hero-img_03]", {
+          yPercent: -30,
+          duration: 25,
+          scrollTrigger: {
+            trigger: ".section-tt-takeways",
+            start: "top bottom",
+            end: "top top",
+            scrub: 1.25
+          }
+        });
+        gsapWithCSS.to("[hero-img_04]", {
+          yPercent: -30,
+          duration: 1,
+          scrollTrigger: {
+            trigger: ".section-tt-takeways",
+            start: "top bottom",
+            end: "top top",
+            scrub: 1.25
+          }
+        });
+      }
+    })();
+  }
+  function handleConfetti() {
+    let button = document.querySelector("#submit-btn");
+    let formBlock = document.querySelector("[get-access-form]");
+    function onClick() {
+      const rect = formBlock.getBoundingClientRect();
+      confetti({
+        particleCount: 150,
+        spread: 60,
+        origin: {
+          x: (rect.left + rect.width / 2) / window.innerWidth,
+          // horizontal center of the block
+          y: (rect.top + rect.height / 2) / window.innerHeight
+          // vertical center of the block
         }
       });
-    })();
-    (() => {
-      gsapWithCSS.from(".sr-footer", {
-        yPercent: -100,
-        scrollTrigger: {
-          trigger: ".sr-footer",
-          start: "top top",
-          scrub: true
-        }
-      });
-    })();
+    }
+    button.addEventListener("click", onClick);
   }
 })();
 /*! Bundled license information:

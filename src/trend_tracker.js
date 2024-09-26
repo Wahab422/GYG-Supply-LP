@@ -38,11 +38,27 @@ function handleScroll() {
       ScrollTrigger.refresh();
     });
   } else {
-    document.addEventListener('touchstart', function (event) {
-      ScrollTrigger.refresh();
+    const sections = document.querySelectorAll('section');
+
+    sections.forEach((section) => {
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top bottom',
+        onEnter: () => {
+          ScrollTrigger.refresh();
+        },
+      });
     });
   }
   requestAnimationFrame(raf);
+
+  document.querySelectorAll('[data-scroll-to]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      let targetSection = btn.getAttribute('data-scroll-to');
+      lenis.scrollTo(targetSection);
+    });
+  });
+  //
 }
 
 function handleRegularAnimation() {
@@ -162,6 +178,7 @@ function init() {
   handleScroll();
   handleCode();
   handleRegularAnimation();
+  handleConfetti();
 }
 document.addEventListener('DOMContentLoaded', init);
 
@@ -213,10 +230,18 @@ function handleCode() {
     if (!document.querySelector('.takeways-item')) return;
     document.querySelectorAll('.takeways-item').forEach((item) => {
       if (window.matchMedia('(min-width: 768px)').matches) {
-        let tl = gsap.timeline({ scrollTrigger: { trigger: item } });
+        let tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: item,
+            start: 'top bottom',
+            end: '80% 80%',
+            scrub: 1.25,
+          },
+        });
         tl.from(item, { width: '70%', duration: 1 }).from(
           item.querySelectorAll('[anim-child]'),
           {
+            delay: 0.25,
             opacity: 0,
             y: '2rem',
             stagger: 0.1,
@@ -235,6 +260,7 @@ function handleCode() {
         }).from(
           item.querySelectorAll('[anim-child]'),
           {
+            delay: 0.25,
             opacity: 0,
             y: '2rem',
             stagger: 0.1,
@@ -348,7 +374,7 @@ function handleCode() {
     let tl = gsap.timeline({
       scrollTrigger: {
         trigger: '[tt-charts_content-track]',
-        start: 'top top',
+        start: 'top 30%',
         end: 'bottom bottom',
         scrub: 1.24,
       },
@@ -362,6 +388,7 @@ function handleCode() {
         drawSVG: '100%',
         duration: 1,
       })
+      .from('[tt-charts_content="1"] [label-element]', { opacity: 0, duration: 0.2 })
       .to('[tt-charts_content="1"] [charts-anim-element]', {
         delay: 1,
         opacity: 0,
@@ -467,13 +494,18 @@ function handleCode() {
     let tl = gsap.timeline({
       scrollTrigger: {
         trigger: '[section-globe-cards]',
-        start: 'top top',
+        start: 'top 50%',
         end: 'bottom bottom',
         scrub: 1.5,
       },
     });
-    tl.from('[section-globe-cards_heading]', { opacity: 0, scale: 0, ease: 'ease' }, '<')
-      .from('[globe-cards-wrapper] ._03', { y: screenHeight / 1.25, ease: 'ease', rotate: '0deg' })
+    tl.from('[section-globe-cards_heading]', { scale: 0.5, ease: 'ease' })
+      .from('.globe-wrapper', { opacity: 0 }, '<')
+      .from(
+        '[globe-cards-wrapper] ._03',
+        { y: screenHeight / 1.25, ease: 'ease', rotate: '0deg' },
+        '<'
+      )
       .from('[globe-cards-wrapper] ._02', { y: screenHeight / 1.25, ease: 'ease', rotate: '0deg' })
       .from('[globe-cards-wrapper] ._01', { y: screenHeight / 1.25, ease: 'ease', rotate: '0deg' });
   })();
@@ -485,7 +517,7 @@ function handleCode() {
       ease: 'ease',
       scrollTrigger: {
         trigger: '[section-tt-explorer]',
-        start: 'top top',
+        start: 'top 30%',
         end: 'bottom bottom',
         scrub: 1.24,
       },
@@ -508,6 +540,7 @@ function handleCode() {
       .to('[section-tt-explorer] .tt-explorer_circles-wrapper', {
         xPercent: window.innerWidth > 767 ? -100 : 0,
         yPercent: window.innerWidth > 767 ? 0 : -120,
+        duration: 1,
       });
 
     //
@@ -517,7 +550,7 @@ function handleCode() {
       stagger: 0.25,
       scrollTrigger: {
         trigger: '[section-tt-explorer]',
-        start: '87% bottom',
+        start: '72% bottom',
         end: 'bottom bottom',
         scrub: 1.24,
       },
@@ -527,9 +560,9 @@ function handleCode() {
   (() => {
     gsap.fromTo(
       '[help-center-block] .help-items-list',
-      { y: '4rem' },
+      { y: '2rem' },
       {
-        y: '-4rem',
+        y: '-2rem',
         scrollTrigger: {
           trigger: '[help-center-block]',
           start: 'top bottom',
@@ -540,9 +573,9 @@ function handleCode() {
     );
     gsap.fromTo(
       '[growth-hub-block] .media-blocks-list',
-      { x: '9rem' },
+      { x: '3rem' },
       {
-        x: '-9rem',
+        x: '-3rem',
         duration: 5,
         scrollTrigger: {
           trigger: '[growth-hub-block]',
@@ -571,19 +604,22 @@ function handleCode() {
   (() => {
     let form = document.querySelector('[get-access-form]');
     if (!form) return;
-    // Stop Form Submit on the Enter
-    form.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter' && event.target.tagName !== 'TEXTAREA') {
-        event.preventDefault(); // Prevent the default form submission on 'Enter' key
-      }
+    form.querySelector('#submit-btn').addEventListener('click', () => {
+      gsap.to(form, { y: '-100%', ease: 'power4.out', duration: 0.7 });
+      gsap.to(form.closest('.steps-form-block').querySelector('.form-success'), {
+        y: '0%',
+        duration: 0.7,
+        ease: 'power4.out',
+      });
     });
+
     // Placeholder text animation
-    const inputField = document.querySelector('#First-Name');
+    const inputField = form.querySelector('[type-effect-anim-field]');
     const placeholderText = inputField.getAttribute('placeholder');
     inputField.setAttribute('placeholder', '');
 
     // Typewriter effect function with blinking caret
-    function typeEffect(element, text, delay = 100) {
+    function typeEffect(element, text, delay = 50) {
       let index = 0;
       let caretVisible = true;
       let caretInterval;
@@ -638,6 +674,21 @@ function handleCode() {
     let nextBlock = form.querySelector('[form-next-step-block]');
     submitBtn.addEventListener('click', () => {
       form.querySelector('#submit-btn').click();
+      let pdfLink = form.parentElement
+        .querySelector('[form-success-pdf-link]')
+        .getAttribute('href');
+      setTimeout(() => {
+        window.open(pdfLink, '_blank');
+      }, 700);
+    });
+    // Stop Form Submit on the Enter
+    form.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' && event.target.tagName !== 'TEXTAREA') {
+        event.preventDefault(); // Prevent the default form submission on 'Enter' key
+        if (!nextBtn.hasAttribute('disabled')) {
+          nextBtn.click();
+        }
+      }
     });
     // Function to update button states
     function updateButtonStates() {
@@ -762,19 +813,20 @@ function handleCode() {
   })();
   //   Lang Toggle
   (() => {
-    let langToggle = document.querySelector('.lang-toggle');
-    if (!langToggle) return;
-    let langDropdown = langToggle.closest('.lang-dropdown');
+    let langToggles = document.querySelectorAll('.lang-toggle');
+    if (langToggles.length < 1) return;
+    langToggles.forEach((btn) => {
+      btn.addEventListener('click', (event) => {
+        let langDropdown = btn.closest('.lang-dropdown');
+        event.stopPropagation(); // Prevent the click from bubbling to the document
+        langDropdown.classList.toggle('open');
 
-    langToggle.addEventListener('click', (event) => {
-      event.stopPropagation(); // Prevent the click from bubbling to the document
-      langDropdown.classList.toggle('open');
-    });
-
-    document.addEventListener('click', (event) => {
-      if (!langDropdown.contains(event.target)) {
-        langDropdown.classList.remove('open'); // Close if clicked outside
-      }
+        document.addEventListener('click', (event) => {
+          if (!langDropdown.contains(event.target)) {
+            langDropdown.classList.remove('open'); // Close if clicked outside
+          }
+        });
+      });
     });
   })();
   //
@@ -793,11 +845,14 @@ function handleCode() {
       duration: 1,
       scrollTrigger: {
         trigger: '[anim-section-clipPath]',
-        start: '80% center',
-        end: '+=250',
+        start: 'bottom bottom',
+        end: 'bottom 30%',
         scrub: 1.5,
       },
-      clipPath: window.innerWidth > 767 ? 'inset(0rem round 3rem)' : 'inset(0rem round 0.8rem)',
+      clipPath:
+        window.innerWidth > 767
+          ? 'inset(0rem round 0rem 0rem 3rem 4rem)'
+          : 'inset(0rem round 0.8rem)',
     });
     document.querySelectorAll('[anim-section-clipPath-into-view]').forEach((section) => {
       gsap.to(section, {
@@ -808,33 +863,151 @@ function handleCode() {
           //   end: section.getAttribute('end-at') ? section.getAttribute('end-at') : 'bottom bottom',
           scrub: 1.5,
         },
-        clipPath: window.innerWidth > 767 ? 'inset(1.25rem round 3rem)' : 'inset(0rem round 0rem)',
+        clipPath:
+          window.innerWidth > 767 ? 'inset(1.25rem round 3rem)' : 'inset(1.25rem round 2rem)',
       });
-    });
-  })();
-  //   Section Average Traveler
-  (() => {
-    gsap.to('.section-average-traveler', {
-      opacity: 0,
-      y: '20%',
-      scale: 0.85,
-      scrollTrigger: {
-        trigger: '.section-imgs',
-        start: 'top 90%',
-        end: 'bottom bottom',
-        scrub: 1.25,
-      },
     });
   })();
   //
   (() => {
-    gsap.from('.sr-footer', {
-      yPercent: -100,
-      scrollTrigger: {
-        trigger: '.sr-footer',
-        start: 'top top',
-        scrub: true,
+    if (window.matchMedia('(min-width: 768px)').matches) {
+      gsap.from('.sr-footer', {
+        yPercent: -100,
+        scrollTrigger: {
+          trigger: '.sr-footer',
+          start: 'top top',
+          scrub: true,
+        },
+      });
+      //
+      gsap.to('.section-average-traveler', {
+        opacity: 0,
+        y: '20%',
+        scale: 0.85,
+        scrollTrigger: {
+          trigger: '.section-imgs',
+          start: 'top 90%',
+          end: 'bottom bottom',
+          scrub: 1.25,
+        },
+      });
+      //
+      let tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: '.section-imgs',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1.25,
+        },
+      });
+
+      tl.from('.explorers-img-wrapper._01', { yPercent: 30 })
+        .from('.explorers-img-wrapper._02', { xPercent: -36 }, '<')
+        .from('.explorers-img-wrapper._03', { xPercent: 32 }, '<')
+        .from('.explorers-img-wrapper._04', { yPercent: 30 }, '<')
+        .from('.explorers-img-wrapper._05', { xPercent: 35 }, '<')
+        .from('.explorers-img-wrapper._06', { yPercent: -65 }, '<');
+
+      // Hero section imgs Animation
+
+      gsap.to('[hero-img_01]', {
+        yPercent: -30,
+        duration: 25,
+        scrollTrigger: {
+          trigger: '.section-tt-takeways',
+          start: 'top bottom',
+          end: 'top top',
+          scrub: 1.25,
+        },
+      });
+      gsap.to('[hero-img_02]', {
+        yPercent: -80,
+        duration: 1,
+        scrollTrigger: {
+          trigger: '.section-tt-takeways',
+          start: 'top bottom',
+          end: 'top top',
+          scrub: 1.25,
+        },
+      });
+      gsap.to('[hero-img_03]', {
+        yPercent: -30,
+        duration: 25,
+        scrollTrigger: {
+          trigger: '.section-tt-takeways',
+          start: 'top bottom',
+          end: 'top top',
+          scrub: 1.25,
+        },
+      });
+      gsap.to('[hero-img_04]', {
+        yPercent: -30,
+        duration: 1,
+        scrollTrigger: {
+          trigger: '.section-tt-takeways',
+          start: 'top bottom',
+          end: 'top top',
+          scrub: 1.25,
+        },
+      });
+    }
+  })();
+  //
+  // (() => {
+  //   // Get the path and hover label elements
+  //   let pathElements = document.querySelectorAll('[path-element="hover"]');
+  //   let hoverLabel = document.querySelector('[hover-label]');
+
+  //   // Function to show the hover label at the mouse position
+  //   function showLabel(event) {
+  //     let x = event.clientX; // Get the X coordinate of the mouse
+  //     let y = event.clientY; // Get the Y coordinate of the mouse
+
+  //     // Calculate the width of the hover label (in pixels) and offset it to center on the mouse
+  //     let hoverLabelWidth = hoverLabel.offsetWidth; // Get the actual width of the hover label
+
+  //     // Position the hover label, centered above the mouse pointer
+  //     hoverLabel.style.left = `${x - 1.35 * hoverLabelWidth}px`; // Center the label horizontally
+  //     hoverLabel.style.top = `${y - hoverLabel.offsetHeight}px`; // Place the label above the cursor with an offset
+
+  //     // Show the hover label (using fade-in effect)
+  //     hoverLabel.style.opacity = '1';
+  //     hoverLabel.style.visibility = 'visible';
+  //   }
+
+  //   // Function to hide the hover label with fade-out effect
+  //   function hideLabel() {
+  //     hoverLabel.style.opacity = '0';
+  //     hoverLabel.style.visibility = 'hidden';
+  //   }
+
+  //   // Add event listeners for hover on all path elements
+  //   pathElements.forEach((pathLine) => {
+  //     pathLine.addEventListener('mouseenter', () => {
+  //       hoverLabel.style.display = 'block'; // Ensure label is shown on hover
+  //     });
+  //     pathLine.addEventListener('mousemove', showLabel); // Update label position on mouse move
+  //     pathLine.addEventListener('mouseleave', hideLabel); // Hide label when not hovering
+  //   });
+
+  //   // Initially hide the hover label
+  //   hideLabel();
+  // })();
+}
+function handleConfetti() {
+  let button = document.querySelector('#submit-btn');
+  let formBlock = document.querySelector('[get-access-form]');
+
+  function onClick() {
+    const rect = formBlock.getBoundingClientRect();
+    confetti({
+      particleCount: 150,
+      spread: 60,
+      origin: {
+        x: (rect.left + rect.width / 2) / window.innerWidth, // horizontal center of the block
+        y: (rect.top + rect.height / 2) / window.innerHeight, // vertical center of the block
       },
     });
-  })();
+  }
+  button.addEventListener('click', onClick);
 }

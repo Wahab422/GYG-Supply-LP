@@ -12,6 +12,7 @@ const ENTRY_POINTS = [
   'src/referral.js',
   'src/fall_release.js',
   'src/trend_tracker.js',
+  'src/test.js',
 ];
 
 // Config dev serving
