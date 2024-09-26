@@ -539,8 +539,8 @@ function handleCode() {
       .to('.section-tt-explorer_block2 [anim-child]', { opacity: 0.16 })
       .to('[section-tt-explorer] .tt-explorer_circles-wrapper', {
         xPercent: window.innerWidth > 767 ? -100 : 0,
-        yPercent: window.innerWidth > 767 ? 0 : -120,
-        duration: 1,
+        yPercent: window.innerWidth > 767 ? 0 : -110,
+        duration: window.innerWidth > 767 ? 1 : 1.5,
       });
 
     //
@@ -865,6 +865,18 @@ function handleCode() {
         },
         clipPath:
           window.innerWidth > 767 ? 'inset(1.25rem round 3rem)' : 'inset(1.25rem round 2rem)',
+      });
+    });
+    document.querySelectorAll('[anim-section-clipPath-into-view-desktop]').forEach((section) => {
+      gsap.to(section, {
+        duration: 1,
+        scrollTrigger: {
+          trigger: section,
+          start: section.getAttribute('start-at') ? section.getAttribute('start-at') : 'top top',
+          //   end: section.getAttribute('end-at') ? section.getAttribute('end-at') : 'bottom bottom',
+          scrub: 1.5,
+        },
+        clipPath: window.innerWidth > 991 ? 'inset(1.25rem round 3rem)' : 'inset(0rem round 0rem)',
       });
     });
   })();
