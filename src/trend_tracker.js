@@ -176,11 +176,51 @@ function handleRegularAnimation() {
 function init() {
   html.classList.add('ready');
   handleScroll();
+  handleWeglot();
   handleCode();
   handleRegularAnimation();
   handleConfetti();
 }
 document.addEventListener('DOMContentLoaded', init);
+
+function handleWeglot() {
+  // init Weglot
+  Weglot.initialize({
+    api_key: 'wg_bb2924345b48f25dde987ebf8015b20a4',
+  });
+
+  document.querySelectorAll('.lang-dropdown [lang]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      let lang = btn.getAttribute('lang');
+      document.querySelectorAll('[lang-text]').forEach((text) => (text.innerHTML = lang));
+      Weglot.switchTo(lang);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    });
+  });
+
+  Weglot.on('languageChanged', function (newLang, prevLang) {
+    document.querySelectorAll('[lang-text]').forEach((text) => (text.innerHTML = newLang));
+    document.querySelectorAll('[form-success-pdf-link]').forEach((link) => {
+      link.setAttribute(
+        'href',
+        link
+          .closest('[get-access-form-wrapper]')
+          .querySelector('form')
+          .getAttribute(`data-pdf-${newLang}`)
+      );
+    });
+  });
+  Weglot.on('initialized', () => {
+    let currentLanguage = Weglot.getCurrentLang();
+    document.querySelectorAll('[data-wg-lang-element]').forEach((ele) => {
+      if (ele.getAttribute('data-wg-lang-element') !== currentLanguage) {
+        ele.remove();
+      }
+    });
+  });
+}
 
 function handleCode() {
   // Function to animate the counter
@@ -301,6 +341,54 @@ function handleCode() {
       });
     });
   })();
+  //
+  //
+  setTimeout(() => {
+    if (!document.querySelector('[section-tt-explorer]')) return;
+    let mySplitText = new SplitText('[split-text]', { type: 'words,chars' });
+    let tl = gsap.timeline({
+      ease: 'ease',
+      scrollTrigger: {
+        trigger: '[section-tt-explorer]',
+        start: 'top 30%',
+        end: 'bottom bottom',
+        scrub: 1.24,
+      },
+    });
+    tl.from('.section-tt-explorer_block1 [anim-child]', {
+      opacity: 0,
+      y: '2rem',
+      stagger: 0.25,
+    })
+      .to(mySplitText.words, { color: '#1a2b49', stagger: 0.05 })
+      .to('.section-tt-explorer_block1 [anim-child]', {
+        opacity: 0,
+        y: -screenHeight / 3,
+        stagger: 0.05,
+        scale: 0.5,
+      })
+      .from('.section-tt-explorer_block2', { y: '40%' }, '-=0.5')
+      .from('.section-tt-explorer_block2 [anim-child]', { opacity: 0, scale: 0.5 }, '<')
+      .to('.section-tt-explorer_block2 [anim-child]', { opacity: 0.16 })
+      .to('[section-tt-explorer] .tt-explorer_circles-wrapper', {
+        xPercent: window.innerWidth > 767 ? -100 : 0,
+        yPercent: window.innerWidth > 767 ? 0 : -110,
+        duration: window.innerWidth > 767 ? 1 : 1.5,
+      });
+
+    //
+    gsap.from('[section-tt-explorer] .tt-explorer_circles-wrapper .tt-explorer_circle', {
+      ease: 'ease',
+      scale: window.innerWidth > 767 ? 0.5 : 0.75,
+      stagger: 0.25,
+      scrollTrigger: {
+        trigger: '[section-tt-explorer]',
+        start: '72% bottom',
+        end: 'bottom bottom',
+        scrub: 1.24,
+      },
+    });
+  }, 1500);
   //   Count Up Animation
   (() => {
     // Function to animate the counter
@@ -447,13 +535,14 @@ function handleCode() {
         btn.classList.add('selected');
         let btnID = btn.getAttribute('id');
         let tabsBarsWrapper = influenceTab.querySelectorAll(`[data-${btnID}]`);
+        influenceTab
+          .querySelectorAll('[bar-label]')
+          .forEach((label) => label.classList.add('hide'));
+        document
+          .querySelectorAll(`[text-${btnID}]`)
+          .forEach((label) => label.classList.remove('hide'));
         tabsBarsWrapper.forEach((barWrapper) => {
-          let barContent = barWrapper.getAttribute(`data-${btnID}`);
-          // Split the string by the comma
-          let parts = barContent.split('=');
-          let barLabelText = parts[0].trim();
-          barWrapper.querySelector('[bar-label]').innerHTML = barLabelText;
-          let barPercentage = parseInt(parts[1].trim(), 10);
+          let barPercentage = parseInt(barWrapper.getAttribute(`data-${btnID}`));
           let barWidth = (barPercentage / maxBarWidth) * 100;
           let bar = barWrapper.querySelector('.influence-bar');
           gsap.to(bar, { width: barWidth + '%', duration: 1, ease: 'ease' });
@@ -510,52 +599,7 @@ function handleCode() {
       .from('[globe-cards-wrapper] ._01', { y: screenHeight / 1.25, ease: 'ease', rotate: '0deg' });
   })();
   //
-  (() => {
-    if (!document.querySelector('[section-tt-explorer]')) return;
-    let mySplitText = new SplitText('[split-text]', { type: 'words,chars' });
-    let tl = gsap.timeline({
-      ease: 'ease',
-      scrollTrigger: {
-        trigger: '[section-tt-explorer]',
-        start: 'top 30%',
-        end: 'bottom bottom',
-        scrub: 1.24,
-      },
-    });
-    tl.from('.section-tt-explorer_block1 [anim-child]', {
-      opacity: 0,
-      y: '2rem',
-      stagger: 0.25,
-    })
-      .to(mySplitText.words, { color: '#1a2b49', stagger: 0.05 })
-      .to('.section-tt-explorer_block1 [anim-child]', {
-        opacity: 0,
-        y: -screenHeight / 3,
-        stagger: 0.05,
-        scale: 0.5,
-      })
-      .from('.section-tt-explorer_block2', { y: '40%' }, '-=0.5')
-      .from('.section-tt-explorer_block2 [anim-child]', { opacity: 0, scale: 0.5 }, '<')
-      .to('.section-tt-explorer_block2 [anim-child]', { opacity: 0.16 })
-      .to('[section-tt-explorer] .tt-explorer_circles-wrapper', {
-        xPercent: window.innerWidth > 767 ? -100 : 0,
-        yPercent: window.innerWidth > 767 ? 0 : -110,
-        duration: window.innerWidth > 767 ? 1 : 1.5,
-      });
 
-    //
-    gsap.from('[section-tt-explorer] .tt-explorer_circles-wrapper .tt-explorer_circle', {
-      ease: 'ease',
-      scale: window.innerWidth > 767 ? 0.5 : 0.75,
-      stagger: 0.25,
-      scrollTrigger: {
-        trigger: '[section-tt-explorer]',
-        start: '72% bottom',
-        end: 'bottom bottom',
-        scrub: 1.24,
-      },
-    });
-  })();
   //  Block Animations
   (() => {
     gsap.fromTo(
@@ -601,7 +645,7 @@ function handleCode() {
     );
   })();
   //
-  (() => {
+  setTimeout(() => {
     let form = document.querySelector('[get-access-form]');
     if (!form) return;
     form.querySelector('#submit-btn').addEventListener('click', () => {
@@ -615,7 +659,7 @@ function handleCode() {
 
     // Placeholder text animation
     const inputField = form.querySelector('[type-effect-anim-field]');
-    const placeholderText = inputField.getAttribute('placeholder');
+    const placeholderText = form.querySelector('#input-placeholder-text-anim').innerHTML;
     inputField.setAttribute('placeholder', '');
 
     // Typewriter effect function with blinking caret
@@ -679,7 +723,7 @@ function handleCode() {
         .getAttribute('href');
       setTimeout(() => {
         window.open(pdfLink, '_blank');
-      }, 700);
+      }, 1500);
     });
     // Stop Form Submit on the Enter
     form.addEventListener('keydown', function (event) {
@@ -810,7 +854,8 @@ function handleCode() {
 
     // Initial button state check on page load
     updateButtonStates();
-  })();
+  }, 1500);
+
   //   Lang Toggle
   (() => {
     let langToggles = document.querySelectorAll('.lang-toggle');
