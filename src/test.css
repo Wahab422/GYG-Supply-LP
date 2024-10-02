@@ -102,3 +102,13 @@ ul li::marker {
 .brand-logo-hover-element:hover .icon-1-5rem{color: var(--guiding-red);}
 
 [brand-logo-wrap]:not(:hover) .brand-logo-hover-elements-wrapper{opacity: 0; top: 1rem; pointer-events: none;}
+
+
+media-controls.vds-controls{padding: 0 1vw 1vw 1vw !important;}
+
+.letter-model:not(.show){transform: translateY(5rem);}
+
+
+[slider-next-btn][aria-disabled="true"] , [slider-prev-btn][aria-disabled="true"] {color: var(--text-grey);}
+
+#weglot-switcher-1{display: none !important;}
