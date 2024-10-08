@@ -26,6 +26,11 @@ function handleScroll() {
     touchMultiplier: 2,
     wheelMultiplier: 1,
   });
+
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
   if (window.innerWidth > 767) {
     lenis.on('scroll', () => {
       ScrollTrigger.refresh();
@@ -33,31 +38,19 @@ function handleScroll() {
   } else {
     const sections = document.querySelectorAll('section');
 
-    sections.forEach((section) => {
-      ScrollTrigger.create({
-        trigger: section,
-        start: 'top bottom',
-        onEnter: () => {
-          ScrollTrigger.refresh();
-        },
-      });
+    ScrollTrigger.batch(sections, {
+      start: 'top bottom',
+      onEnter: (batch) => {
+        ScrollTrigger.refresh(); // Refresh only when entering sections on mobile
+      },
     });
   }
-  function raf(time) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  }
-
   requestAnimationFrame(raf);
 
   document.querySelector('[scrollToTop]').addEventListener('click', () => {
     lenis.scrollTo('top', { duration: 2 });
-    if (footer2row && window.innerWidth > 991) {
-      setTimeout(() => {
-        gsap.set(footer2row, { y: '-100%' });
-      }, 1500);
-    }
   });
+  //
 }
 
 function handleRegularAnimation() {
@@ -96,7 +89,7 @@ function handleRegularAnimation() {
             start: element.getAttribute('scrollTrigger-start') || 'top 95%',
             markers: element.getAttribute('anim-markers') || false,
           },
-          delay: element.getAttribute('data-delay') || 0.15,
+          delay: element.getAttribute('data-delay') || 0.35,
         });
       },
     });
@@ -107,7 +100,7 @@ function handleRegularAnimation() {
     let y = element.getAttribute('from-y');
     let easing = element.getAttribute('data-easing');
     easing = easing || 'power3.out';
-    delay = delay || 0;
+    delay = delay || 0.35;
     duration = duration || 1.2;
     y = y || '2rem';
     gsap.fromTo(
@@ -178,6 +171,7 @@ function init() {
   handleFeatureThubnailVideos();
   setTimeout(() => {
     handleVideos();
+    handleConfetti();
     handlePopups();
     handleSlider();
     FooterScroll();
@@ -190,38 +184,80 @@ function handleCode() {
   (() => {
     let tabSliderSection = document.querySelector('.fr-acc_grid_slider-block');
     if (!tabSliderSection) return;
+
     let sliderVideos = tabSliderSection.querySelectorAll('video');
-    // play 1st Video
+
+    // Play the 1st Video using GSAP
     gsap.to(sliderVideos[0], {
       duration: 1,
       scrollTrigger: sliderVideos[0],
       onStart: () => {
         tabSliderSection.querySelector('[slide-to="1"]').click();
+        playVideo(sliderVideos[0]);
       },
     });
+
     let videoBtns = tabSliderSection.querySelectorAll('[slide-to]');
     videoBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        tabSliderSection.querySelectorAll('video').forEach((video) => video.pause());
+      btn.addEventListener('click', async () => {
+        // Pause all videos and wait for each pause to complete
+        await pauseAllVideos();
+
+        // Find the selected video and play it
         let selectedVideo = tabSliderSection.querySelector(
           `[data-video="${btn.getAttribute('slide-to')}"]`
         );
-        selectedVideo.play();
+
+        playVideo(selectedVideo);
       });
     });
-    //
 
-    // Function to play the next video
-    function playNextVideo(currentIndex) {
-      let nextIndex = (currentIndex + 1) % sliderVideos.length; // Calculate the next index
-      sliderVideos[nextIndex].play(); // Play the next video
-      tabSliderSection.querySelector(`[slide-to="${nextIndex + 1}"]`).click();
+    // Function to play a video with error handling and ensuring no overlapping play/pause calls
+    function playVideo(video) {
+      if (video) {
+        video.pause(); // Make sure to stop it first in case it's playing
+
+        try {
+          // Play the video
+          video
+            .play()
+            .then(() => {
+              console.log('Video is now playing');
+            })
+            .catch((error) => {
+              console.error('Error playing video:', error);
+            });
+        } catch (error) {
+          console.error('Error attempting to play video:', error);
+        }
+      }
     }
 
-    // Add event listeners to each video element
+    // Function to pause all videos and ensure all videos are paused before continuing
+    async function pauseAllVideos() {
+      let promises = Array.from(sliderVideos).map((video) => {
+        return new Promise((resolve) => {
+          video.pause();
+          video.currentTime = 0; // Optional: reset video to the beginning
+          resolve();
+        });
+      });
+
+      // Await for all videos to be paused before continuing
+      await Promise.all(promises);
+    }
+
+    // Function to play the next video in the slider
+    function playNextVideo(currentIndex) {
+      let nextIndex = (currentIndex + 1) % sliderVideos.length; // Calculate the next index
+      tabSliderSection.querySelector(`[slide-to="${nextIndex + 1}"]`).click();
+      playVideo(sliderVideos[nextIndex]); // Play the next video
+    }
+
+    // Add event listeners to each video element for the 'ended' event
     sliderVideos.forEach((video, index) => {
       video.addEventListener('ended', () => {
-        playNextVideo(index); // Call function to play the next video when the current one ends
+        playNextVideo(index); // Play the next video when the current one ends
       });
     });
   })();
@@ -356,6 +392,7 @@ function handleCode() {
       document.querySelectorAll('.video-style-button').forEach((btn) => {
         let tl = gsap.timeline({ scrollTrigger: btn });
         tl.from(btn, {
+          delay: 0.5,
           duration: 0.6,
           width: '4.0625rem',
           ease: 'power4.Out',
@@ -549,20 +586,32 @@ function handleCode() {
           window.innerWidth > 767 ? 'inset(1.25rem round 3rem)' : 'inset(1.25rem round 2rem)',
       });
     });
+    document.querySelectorAll('[anim-section-clipPath-into-view-desktop]').forEach((section) => {
+      gsap.to(section, {
+        duration: 1,
+        scrollTrigger: {
+          trigger: section,
+          start: section.getAttribute('start-at') ? section.getAttribute('start-at') : 'top top',
+          //   end: section.getAttribute('end-at') ? section.getAttribute('end-at') : 'bottom bottom',
+          scrub: 1.5,
+        },
+        clipPath: window.innerWidth > 991 ? 'inset(1.25rem round 3rem)' : 'inset(0rem round 0rem)',
+      });
+    });
   })();
   //
   (() => {
     if (!document.querySelector('.experience-cards')) return;
     gsap.utils.toArray('.experience-cards .experience-card').forEach((card) => {
       gsap.from(card, {
-        y: '40rem',
+        y: window.innerWidth > 767 ? '20rem' : '4rem',
         scale: 0.75,
         opacity: 0,
         duration: 1.5,
         ease: 'ease',
         scrollTrigger: {
           trigger: card,
-          start: '-=200% bottom',
+          start: window.innerWidth > 767 ? '-30rem bottom' : '-7rem bottom',
         },
       });
     });
@@ -573,25 +622,27 @@ function handleCode() {
     let feedbackTrackerComponent = document.querySelector('[section-fr-feedback-form]');
     if (!feedbackTrackerComponent) return;
     let feedbackFormBtn = feedbackTrackerComponent.querySelector('[feedback-btn]');
-    let feedbackFormCloseBtn = feedbackTrackerComponent.querySelector('[feedback-form-btn]');
-    let feedbackFormWrapper = feedbackTrackerComponent.querySelector('[feedback-form]');
+    let feedbackFormCloseBtns = feedbackTrackerComponent.querySelectorAll('[feedback-form-btn]');
+    let feedbackFormWrapper = feedbackTrackerComponent.querySelector('[feedback-form-wrapper]');
     feedbackFormBtn.addEventListener('click', () => {
       gsap.to(feedbackFormWrapper, { scale: 1, opacity: 1, ease: 'power4.out' });
-      gsap.to(feedbackFormBtn, { scale: 0, opacity: 0, ease: 'power4.out' });
+      // gsap.to(feedbackFormBtn, { scale: 0, opacity: 0, ease: 'power4.out' });
       feedbackTrackerComponent.classList.add('is-dark');
       gsap.to('.team-text-screens-wrap', { x: '-10%', ease: 'power4.out' });
     });
-    feedbackFormCloseBtn.addEventListener('click', () => {
-      gsap.to(feedbackFormWrapper, { scale: 0, opacity: 0, ease: 'power4.out' });
-      gsap.to(feedbackFormBtn, { scale: 1, opacity: 1, ease: 'power4.out' });
-      feedbackTrackerComponent.classList.remove('is-dark');
-      gsap.to('.team-text-screens-wrap', { x: '0%', ease: 'power4.out' });
+    feedbackFormCloseBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        gsap.to(feedbackFormWrapper, { scale: 0, opacity: 0, ease: 'power4.out' });
+        // gsap.to(feedbackFormBtn, { scale: 1, opacity: 1, ease: 'power4.out' });
+        feedbackTrackerComponent.classList.remove('is-dark');
+        gsap.to('.team-text-screens-wrap', { x: '0%', ease: 'power4.out' });
+      });
     });
     //
     let form = feedbackTrackerComponent.querySelector('[get-access-form]');
     form.querySelector('#submit-btn').addEventListener('click', () => {
       gsap.to(form, { y: '-100%', ease: 'power4.out', duration: 0.7 });
-      gsap.to(form.closest('.steps-form-block').querySelector('.form-success'), {
+      gsap.to(form.closest('[feedback-form-wrapper]').querySelector('.form-success'), {
         y: '0%',
         duration: 0.7,
         ease: 'power4.out',
@@ -750,23 +801,50 @@ function handleCode() {
 function anchorNavigation() {
   let anchorNavigationBlock = document.querySelector('.features-navigation');
   if (!anchorNavigationBlock) return;
-  //
-  gsap.set('.features-navigation-wrapper', { opacity: 0, x: '-40', pointerEvents: 'none' });
+
+  // Cache the selector to avoid multiple DOM queries
+  const navWrapper = document.querySelector('.features-navigation-wrapper');
+
+  // GSAP animation when scrolling into '.section-fr-experience'
   gsap.fromTo(
-    '.features-navigation-wrapper',
-    { opacity: 0, x: '-40', pointerEvents: 'none' },
+    navWrapper,
+    { opacity: 0, x: -40, pointerEvents: 'none' }, // Initial state
     {
       duration: 0.75,
       opacity: 1,
-      x: '0',
+      x: 0,
       pointerEvents: 'auto',
       scrollTrigger: {
-        trigger: '.section-fr-acc',
+        trigger: '.section-fr-experience',
         start: 'top 1%',
         toggleActions: 'play none none reverse',
       },
     }
   );
+
+  // GSAP animation to hide navWrapper when '.sr-footer' comes into view
+  ScrollTrigger.create({
+    trigger: '.sr-footer',
+    start: 'top bottom', // When the top of .sr-footer hits the bottom of the viewport
+    onEnter: () => {
+      gsap.to(navWrapper, {
+        opacity: 0,
+        x: -40,
+        pointerEvents: 'none',
+        duration: 0.75,
+      });
+    },
+    onLeaveBack: () => {
+      // Optionally, you can reverse the animation if scrolling back up
+      gsap.to(navWrapper, {
+        opacity: 1,
+        x: 0,
+        pointerEvents: 'auto',
+        duration: 0.75,
+      });
+    },
+  });
+
   let anchorSections = document.querySelectorAll('[anchor-navigation-title]');
   let featureAnchorTexts = [];
   anchorSections.forEach((item, index) => {
@@ -824,7 +902,8 @@ function anchorNavigation() {
       let anchorTargetSection = document.querySelector(`[feature_ID="${anchor_ID}"]`);
       let rect = anchorTargetSection.getBoundingClientRect();
       let offsetTop = rect.top + window.pageYOffset;
-      lenis.scrollTo(offsetTop - 90, { duration: 1 });
+      let topDifference = anchorTargetSection.tagName === 'SECTION' ? 0 : 90;
+      lenis.scrollTo(offsetTop - topDifference, { duration: 1 });
     });
   });
 }
@@ -834,32 +913,62 @@ function handleVideos() {
   videosOuterWrappers.forEach((wrapper) => {
     let togglePlayVideoBtns = wrapper.querySelectorAll('[toggle-play-video]');
     let toggleCloseVideoBtns = wrapper.querySelectorAll('[toggle-close-video]');
-    let videoWrapper = wrapper.querySelector('[styled-video-player]');
-    let video = videoWrapper.querySelector('[styled-video-player] video');
+    let videoWrapper = wrapper.querySelector('[styled-video-player-wrapper]');
+    let video = videoWrapper.querySelector('video');
     toggleCloseVideoBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         video.pause();
-        gsap.to(videoWrapper, {
-          duration: 0.35,
-          opacity: 0,
-          pointerEvents: 'none',
-          display: 'none',
-          onComplete: () => {
-            gsap.to(videoWrapper, { zIndex: '-1' });
-          },
-        });
+        if (
+          !btn.hasAttribute('hero-video-play-btn') &&
+          window.innerWidth < 767 &&
+          videoWrapper.closest('.video-element-wrapper')
+        ) {
+          gsap.to(videoWrapper, {
+            duration: 0.35,
+            opacity: 0,
+            pointerEvents: 'none',
+            height: '0',
+            marginTop: '0',
+            onComplete: () => {
+              gsap.to(videoWrapper, { zIndex: '-1' });
+            },
+          });
+        } else {
+          gsap.to(videoWrapper, {
+            duration: 0.35,
+            opacity: 0,
+            pointerEvents: 'none',
+            onComplete: () => {
+              gsap.to(videoWrapper, { zIndex: '-1' });
+            },
+          });
+        }
       });
     });
     togglePlayVideoBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
-        video.play(),
+        video.play();
+        if (
+          !btn.hasAttribute('hero-video-play-btn') &&
+          window.innerWidth < 767 &&
+          videoWrapper.closest('.video-element-wrapper')
+        ) {
           gsap.to(videoWrapper, {
             duration: 0.35,
-            display: 'block',
+            opacity: 1,
+            pointerEvents: 'auto',
+            zIndex: '100',
+            height: 'auto',
+            marginTop: '-7rem',
+          });
+        } else {
+          gsap.to(videoWrapper, {
+            duration: 0.35,
             opacity: 1,
             pointerEvents: 'auto',
             zIndex: '100',
           });
+        }
       });
     });
   });
@@ -948,7 +1057,7 @@ function handleSlider() {
       slidesPerView: 'auto',
       spaceBetween: 0,
       loop: false,
-      speed: 600,
+      speed: 1000,
       on: {
         init: function () {
           let activeSlideIndex = this.activeIndex + 1;
@@ -1106,4 +1215,21 @@ function handleWeglot() {
       }
     });
   });
+}
+function handleConfetti() {
+  let button = document.querySelector('#submit-btn');
+  let formBlock = document.querySelector('[get-access-form]');
+
+  function onClick() {
+    const rect = formBlock.getBoundingClientRect();
+    confetti({
+      particleCount: 150,
+      spread: 60,
+      origin: {
+        x: (rect.left + rect.width / 2) / window.innerWidth, // horizontal center of the block
+        y: (rect.top + rect.height / 2) / window.innerHeight, // vertical center of the block
+      },
+    });
+  }
+  button.addEventListener('click', onClick);
 }

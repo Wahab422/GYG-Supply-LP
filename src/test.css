@@ -99,16 +99,92 @@ ul li::marker {
 [get-access-form] input:focus::placeholder {
   color: rgba(26, 43, 73, 0.3);
 }
-.brand-logo-hover-element:hover .icon-1-5rem{color: var(--guiding-red);}
+.brand-logo-hover-element:hover .icon-1-5rem {
+  color: var(--guiding-red);
+}
 
-[brand-logo-wrap]:not(:hover) .brand-logo-hover-elements-wrapper{opacity: 0; top: 1rem; pointer-events: none;}
+[brand-logo-wrap]:not(:hover) .brand-logo-hover-elements-wrapper {
+  opacity: 0;
+  top: 1rem;
+  pointer-events: none;
+}
+
+media-controls.vds-controls {
+  padding: 0 1vw 1vw 1vw !important;
+}
+
+.letter-model:not(.show) {
+  transform: translateY(5rem);
+}
+
+[slider-next-btn][aria-disabled='true'],
+[slider-prev-btn][aria-disabled='true'] {
+  color: var(--text-grey);
+}
+
+#weglot-switcher-1 {
+  display: none !important;
+}
+
+[data-anim],
+[anim-element],
+[anim-child] {
+  will-change: transform, opacity;
+}
+
+[form-current-step-block] input {
+  display: block;
+  opacity: 1;
+}
+[form-current-step-block] select {
+  display: block;
+  opacity: 1;
+}
+[form-current-step-block] textarea {
+  display: block;
+  opacity: 1;
+}
+
+[media-player] {
+  transform: scale(1.003);
+}
+
+@media only screen and (min-width: 768px) {
+  [anim-section-clipPath-into-view] .video-close-btn-wrapper {
+    padding: 3rem;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  [anim-section-clipPath-into-view] [styled-video-player] {
+    left: 1.25rem;
+    right: 1.25rem;
+    left: 1.25rem;
+  }
+}
 
 
-media-controls.vds-controls{padding: 0 1vw 1vw 1vw !important;}
-
-.letter-model:not(.show){transform: translateY(5rem);}
+[styled-video-player] media-player{transform: scale(1.1);}
 
 
-[slider-next-btn][aria-disabled="true"] , [slider-prev-btn][aria-disabled="true"] {color: var(--text-grey);}
 
-#weglot-switcher-1{display: none !important;}
+[styled-video-player-wrapper]{
+  position: absolute;
+  top: 0%;
+  right: 0%;
+  left: 0%;
+  bottom: 0%;
+}
+
+
+
+[styled-video-player-wrapper]{
+  opacity:0;
+  pointer-events: none;
+  position: absolute;
+  z-index: -3;
+  top: 0%;
+  right: 0%;
+  left: 0%;
+  bottom: 0%;
+}

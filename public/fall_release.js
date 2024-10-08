@@ -8648,34 +8648,26 @@
       touchMultiplier: 2,
       wheelMultiplier: 1
     });
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
     if (window.innerWidth > 767) {
       lenis.on("scroll", () => {
         ScrollTrigger2.refresh();
       });
     } else {
       const sections = document.querySelectorAll("section");
-      sections.forEach((section) => {
-        ScrollTrigger2.create({
-          trigger: section,
-          start: "top bottom",
-          onEnter: () => {
-            ScrollTrigger2.refresh();
-          }
-        });
+      ScrollTrigger2.batch(sections, {
+        start: "top bottom",
+        onEnter: (batch) => {
+          ScrollTrigger2.refresh();
+        }
       });
-    }
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
     }
     requestAnimationFrame(raf);
     document.querySelector("[scrollToTop]").addEventListener("click", () => {
       lenis.scrollTo("top", { duration: 2 });
-      if (footer2row && window.innerWidth > 991) {
-        setTimeout(() => {
-          gsapWithCSS.set(footer2row, { y: "-100%" });
-        }, 1500);
-      }
     });
   }
   function handleRegularAnimation() {
@@ -8711,7 +8703,7 @@
               start: element.getAttribute("scrollTrigger-start") || "top 95%",
               markers: element.getAttribute("anim-markers") || false
             },
-            delay: element.getAttribute("data-delay") || 0.15
+            delay: element.getAttribute("data-delay") || 0.35
           });
         }
       });
@@ -8722,7 +8714,7 @@
       let y = element.getAttribute("from-y");
       let easing = element.getAttribute("data-easing");
       easing = easing || "power3.out";
-      delay = delay || 0;
+      delay = delay || 0.35;
       duration = duration || 1.2;
       y = y || "2rem";
       gsapWithCSS.fromTo(
@@ -8790,6 +8782,7 @@
     handleFeatureThubnailVideos();
     setTimeout(() => {
       handleVideos();
+      handleConfetti();
       handlePopups();
       handleSlider();
       FooterScroll();
@@ -8806,7 +8799,7 @@
         duration: 1,
         scrollTrigger: sliderVideos[0],
         onStart: () => {
-          sliderVideos[0].play();
+          tabSliderSection.querySelector('[slide-to="1"]').click();
         }
       });
       let videoBtns = tabSliderSection.querySelectorAll("[slide-to]");
@@ -8955,6 +8948,7 @@
         document.querySelectorAll(".video-style-button").forEach((btn) => {
           let tl = gsapWithCSS.timeline({ scrollTrigger: btn });
           tl.from(btn, {
+            delay: 0.5,
             duration: 0.6,
             width: "4.0625rem",
             ease: "power4.Out"
@@ -9139,14 +9133,14 @@
         return;
       gsapWithCSS.utils.toArray(".experience-cards .experience-card").forEach((card) => {
         gsapWithCSS.from(card, {
-          y: "40rem",
+          y: "20rem",
           scale: 0.75,
           opacity: 0,
           duration: 1.5,
           ease: "ease",
           scrollTrigger: {
             trigger: card,
-            start: "-=200% bottom"
+            start: "-30rem bottom"
           }
         });
       });
@@ -9156,24 +9150,24 @@
       if (!feedbackTrackerComponent)
         return;
       let feedbackFormBtn = feedbackTrackerComponent.querySelector("[feedback-btn]");
-      let feedbackFormCloseBtn = feedbackTrackerComponent.querySelector("[feedback-form-btn]");
-      let feedbackFormWrapper = feedbackTrackerComponent.querySelector("[feedback-form]");
+      let feedbackFormCloseBtns = feedbackTrackerComponent.querySelectorAll("[feedback-form-btn]");
+      let feedbackFormWrapper = feedbackTrackerComponent.querySelector("[feedback-form-wrapper]");
       feedbackFormBtn.addEventListener("click", () => {
         gsapWithCSS.to(feedbackFormWrapper, { scale: 1, opacity: 1, ease: "power4.out" });
-        gsapWithCSS.to(feedbackFormBtn, { scale: 0, opacity: 0, ease: "power4.out" });
         feedbackTrackerComponent.classList.add("is-dark");
         gsapWithCSS.to(".team-text-screens-wrap", { x: "-10%", ease: "power4.out" });
       });
-      feedbackFormCloseBtn.addEventListener("click", () => {
-        gsapWithCSS.to(feedbackFormWrapper, { scale: 0, opacity: 0, ease: "power4.out" });
-        gsapWithCSS.to(feedbackFormBtn, { scale: 1, opacity: 1, ease: "power4.out" });
-        feedbackTrackerComponent.classList.remove("is-dark");
-        gsapWithCSS.to(".team-text-screens-wrap", { x: "0%", ease: "power4.out" });
+      feedbackFormCloseBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          gsapWithCSS.to(feedbackFormWrapper, { scale: 0, opacity: 0, ease: "power4.out" });
+          feedbackTrackerComponent.classList.remove("is-dark");
+          gsapWithCSS.to(".team-text-screens-wrap", { x: "0%", ease: "power4.out" });
+        });
       });
       let form = feedbackTrackerComponent.querySelector("[get-access-form]");
       form.querySelector("#submit-btn").addEventListener("click", () => {
         gsapWithCSS.to(form, { y: "-100%", ease: "power4.out", duration: 0.7 });
-        gsapWithCSS.to(form.closest(".steps-form-block").querySelector(".form-success"), {
+        gsapWithCSS.to(form.closest("[feedback-form-wrapper]").querySelector(".form-success"), {
           y: "0%",
           duration: 0.7,
           ease: "power4.out"
@@ -9290,22 +9284,44 @@
     let anchorNavigationBlock = document.querySelector(".features-navigation");
     if (!anchorNavigationBlock)
       return;
-    gsapWithCSS.set(".features-navigation-wrapper", { opacity: 0, x: "-40", pointerEvents: "none" });
+    const navWrapper = document.querySelector(".features-navigation-wrapper");
     gsapWithCSS.fromTo(
-      ".features-navigation-wrapper",
-      { opacity: 0, x: "-40", pointerEvents: "none" },
+      navWrapper,
+      { opacity: 0, x: -40, pointerEvents: "none" },
+      // Initial state
       {
         duration: 0.75,
         opacity: 1,
-        x: "0",
+        x: 0,
         pointerEvents: "auto",
         scrollTrigger: {
-          trigger: ".section-fr-acc",
+          trigger: ".section-fr-experience",
           start: "top 1%",
           toggleActions: "play none none reverse"
         }
       }
     );
+    ScrollTrigger2.create({
+      trigger: ".sr-footer",
+      start: "top bottom",
+      // When the top of .sr-footer hits the bottom of the viewport
+      onEnter: () => {
+        gsapWithCSS.to(navWrapper, {
+          opacity: 0,
+          x: -40,
+          pointerEvents: "none",
+          duration: 0.75
+        });
+      },
+      onLeaveBack: () => {
+        gsapWithCSS.to(navWrapper, {
+          opacity: 1,
+          x: 0,
+          pointerEvents: "auto",
+          duration: 0.75
+        });
+      }
+    });
     let anchorSections = document.querySelectorAll("[anchor-navigation-title]");
     let featureAnchorTexts = [];
     anchorSections.forEach((item, index) => {
@@ -9357,7 +9373,8 @@
         let anchorTargetSection = document.querySelector(`[feature_ID="${anchor_ID}"]`);
         let rect = anchorTargetSection.getBoundingClientRect();
         let offsetTop = rect.top + window.pageYOffset;
-        lenis.scrollTo(offsetTop - 90, { duration: 1 });
+        let topDifference = anchorTargetSection.tagName === "SECTION" ? 0 : 90;
+        lenis.scrollTo(offsetTop - topDifference, { duration: 1 });
       });
     });
   }
@@ -9482,7 +9499,7 @@
         slidesPerView: "auto",
         spaceBetween: 0,
         loop: false,
-        speed: 600,
+        speed: 1e3,
         on: {
           init: function() {
             let activeSlideIndex = this.activeIndex + 1;
@@ -9541,10 +9558,10 @@
     }
   }
   function FooterScroll() {
-    let footer2row2 = document.querySelector("[footer-row-2]");
-    if (footer2row2 && window.innerWidth > 991) {
+    let footer2row = document.querySelector("[footer-row-2]");
+    if (footer2row && window.innerWidth > 991) {
       let FooterScroll2 = gsapWithCSS.fromTo(
-        footer2row2,
+        footer2row,
         { y: "-100%" },
         {
           y: "0%",
@@ -9553,8 +9570,8 @@
       );
       ScrollTrigger2.create({
         trigger: "[footer-row-2]",
-        start: `70% ${window.innerHeight - footer2row2.scrollHeight + 700}`,
-        end: `0% ${window.innerHeight - footer2row2.scrollHeight - footer2row2.scrollHeight}`,
+        start: `70% ${window.innerHeight - footer2row.scrollHeight + 700}`,
+        end: `0% ${window.innerHeight - footer2row.scrollHeight - footer2row.scrollHeight}`,
         animation: FooterScroll2,
         scrub: 2
       });
@@ -9608,6 +9625,24 @@
         }
       });
     });
+  }
+  function handleConfetti() {
+    let button = document.querySelector("#submit-btn");
+    let formBlock = document.querySelector("[get-access-form]");
+    function onClick() {
+      const rect = formBlock.getBoundingClientRect();
+      confetti({
+        particleCount: 150,
+        spread: 60,
+        origin: {
+          x: (rect.left + rect.width / 2) / window.innerWidth,
+          // horizontal center of the block
+          y: (rect.top + rect.height / 2) / window.innerHeight
+          // vertical center of the block
+        }
+      });
+    }
+    button.addEventListener("click", onClick);
   }
 })();
 /*! Bundled license information:
