@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": ["../bin/live-reload.js", "../src/test.js"],
-  "sourcesContent": ["new EventSource(`${SERVE_ORIGIN}/esbuild`).addEventListener('change', () => location.reload());\r\n", "// Create a button element\r\nconst button = document.querySelector('#btn');\r\n\r\nconst textSpan = document.createElement('span');\r\ntextSpan.textContent = 'Like';\r\n\r\n// Function to trigger confetti effect\r\nfunction onClick() {\r\n    confetti({\r\n        particleCount: 150,\r\n        spread: 60,\r\n    });\r\n}\r\n\r\n// Attach the click event listener to the button\r\nbutton.addEventListener('click', onClick);\r\n"],
-  "mappings": ";;;AAAA,MAAI,YAAY,GAAG,uBAAY,UAAU,EAAE,iBAAiB,UAAU,MAAM,SAAS,OAAO,CAAC;;;ACC7F,MAAM,SAAS,SAAS,cAAc,MAAM;AAE5C,MAAM,WAAW,SAAS,cAAc,MAAM;AAC9C,WAAS,cAAc;AAGvB,WAAS,UAAU;AACf,aAAS;AAAA,MACL,eAAe;AAAA,MACf,QAAQ;AAAA,IACZ,CAAC;AAAA,EACL;AAGA,SAAO,iBAAiB,SAAS,OAAO;",
+  "sources": ["../bin/live-reload.js"],
+  "sourcesContent": ["new EventSource(`${SERVE_ORIGIN}/esbuild`).addEventListener('change', () => location.reload());\r\n"],
+  "mappings": ";;;AAAA,MAAI,YAAY,GAAG,uBAAY,UAAU,EAAE,iBAAiB,UAAU,MAAM,SAAS,OAAO,CAAC;",
   "names": []
 }

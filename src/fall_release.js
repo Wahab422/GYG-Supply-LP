@@ -219,14 +219,7 @@ function handleCode() {
 
         try {
           // Play the video
-          video
-            .play()
-            .then(() => {
-              console.log('Video is now playing');
-            })
-            .catch((error) => {
-              console.error('Error playing video:', error);
-            });
+          video.play();
         } catch (error) {
           console.error('Error attempting to play video:', error);
         }
@@ -631,13 +624,15 @@ function handleCode() {
       gsap.to('.team-text-screens-wrap', { x: '-10%', ease: 'power4.out' });
     });
     feedbackFormCloseBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        gsap.to(feedbackFormWrapper, { scale: 0, opacity: 0, ease: 'power4.out' });
-        // gsap.to(feedbackFormBtn, { scale: 1, opacity: 1, ease: 'power4.out' });
-        feedbackTrackerComponent.classList.remove('is-dark');
-        gsap.to('.team-text-screens-wrap', { x: '0%', ease: 'power4.out' });
-      });
+      btn.addEventListener('click', closeForm);
     });
+    // Close FOrm
+    function closeForm() {
+      gsap.to(feedbackFormWrapper, { scale: 0, opacity: 0, ease: 'power4.out' });
+      // gsap.to(feedbackFormBtn, { scale: 1, opacity: 1, ease: 'power4.out' });
+      feedbackTrackerComponent.classList.remove('is-dark');
+      gsap.to('.team-text-screens-wrap', { x: '0%', ease: 'power4.out' });
+    }
     //
     let form = feedbackTrackerComponent.querySelector('[get-access-form]');
     form.querySelector('#submit-btn').addEventListener('click', () => {
@@ -658,12 +653,13 @@ function handleCode() {
     let nextBlock = form.querySelector('[form-next-step-block]');
     submitBtn.addEventListener('click', () => {
       form.querySelector('#submit-btn').click();
-      let pdfLink = form.parentElement
-        .querySelector('[form-success-pdf-link]')
-        .getAttribute('href');
+    });
+    // Reload Form after submission
+    form.addEventListener('submit', () => {
       setTimeout(() => {
-        window.open(pdfLink, '_blank');
-      }, 700);
+        closeForm();
+        form.reset();
+      }, 2000);
     });
     // Stop Form Submit on the Enter
     form.addEventListener('keydown', function (event) {
@@ -796,6 +792,98 @@ function handleCode() {
     updateButtonStates();
   })();
   //
+  (() => {
+    // Download assets //
+    function DownloadFile(fileName, fileUrl) {
+      // Create XMLHttpRequest.
+      var req = new XMLHttpRequest();
+      req.open('GET', fileUrl, true);
+      req.responseType = 'blob';
+
+      req.onload = function () {
+        // Convert the Byte Data to a Blob object.
+        var blob = new Blob([req.response], { type: 'application/octet-stream' });
+
+        // Check browser type to handle IE separately.
+        var isIE = false || !!document.documentMode;
+        if (isIE) {
+          window.navigator.msSaveBlob(blob, fileName);
+        } else {
+          // For non-IE browsers.
+          var url = window.URL || window.webkitURL;
+          var link = url.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.setAttribute('download', fileName);
+          a.setAttribute('href', link);
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      };
+
+      req.send();
+    }
+
+    // Handle download-asset clicks dynamically
+    document.querySelectorAll('[download-asset]').forEach((button) => {
+      button.addEventListener('click', function () {
+        let assetUrl = this.getAttribute('download-asset');
+        let fileName = assetUrl.split('/').pop(); // Extract file name from URL
+        DownloadFile(fileName, assetUrl); // Call download function
+      });
+    });
+
+    // Download PDF according to Language
+    let pdfLinks = {
+      en: 'https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/67043c48d27af9576d205dac_unlocked-fall-24-getyourguide-en.pdf',
+      es: 'https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/67043c485445de53f69fb111_unlocked-fall-24-getyourguide-es.pdf',
+      de: 'https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/67043c4859e6afbd0bbcedc1_unlocked-fall-24-getyourguide-de.pdf',
+      fr: 'https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/67043c48babea820b3eebb3d_unlocked-fall-24-getyourguide-fr.pdf',
+      it: 'https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/67043c48686759f9ae07e79d_unlocked-fall-24-getyourguide-it.pdf',
+      br: 'https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/6704f8384f8fa7ca366e44ba_unlocked-fall-24-getyourguide-es.pdf',
+    };
+
+    document.querySelectorAll('[download-pdf]').forEach((button) => {
+      button.addEventListener('click', function () {
+        let currentLanguage = document.documentElement.lang || 'en';
+        let pdfLink = pdfLinks[currentLanguage] || pdfLinks['en'];
+        let fileName = pdfLink.split('/').pop();
+        DownloadFile(fileName, pdfLink);
+      });
+    });
+  })();
+  //
+  (() => {
+    // Share buttons
+    document.querySelectorAll('[share-to]').forEach((button) => {
+      button.addEventListener('click', function () {
+        const platform = this.getAttribute('share-to').toLowerCase();
+        const shareLink = this.getAttribute('share-link');
+
+        if (!shareLink) return; // Exit if no share link is provided
+
+        let url = '';
+        switch (platform) {
+          case 'linkedin':
+            url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareLink)}`;
+            break;
+          case 'facebook':
+            url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`;
+            break;
+          case 'whatsapp':
+            url = `https://wa.me/?text=${encodeURIComponent(shareLink)}`;
+            break;
+          case 'email':
+            url = `mailto:?subject=Check this out&body=${encodeURIComponent(shareLink)}`;
+            break;
+          default:
+            return; // If an unsupported platform is used
+        }
+
+        window.open(url, '_blank');
+      });
+    });
+  })();
 }
 
 function anchorNavigation() {
@@ -910,11 +998,33 @@ function anchorNavigation() {
 //
 function handleVideos() {
   let videosOuterWrappers = document.querySelectorAll('[video-wrapper]');
+
+  const createIntersectionObserver = (video) => {
+    let observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting && !video.paused) {
+            video.pause(); // Pause the video if it's playing and is out of view
+          }
+        });
+      },
+      {
+        threshold: 0.15, // Trigger when 25% of the video is visible
+      }
+    );
+
+    observer.observe(video); // Observe the video element
+  };
+
   videosOuterWrappers.forEach((wrapper) => {
     let togglePlayVideoBtns = wrapper.querySelectorAll('[toggle-play-video]');
     let toggleCloseVideoBtns = wrapper.querySelectorAll('[toggle-close-video]');
     let videoWrapper = wrapper.querySelector('[styled-video-player-wrapper]');
     let video = videoWrapper.querySelector('video');
+
+    // Create an intersection observer for each video
+    createIntersectionObserver(video);
+
     toggleCloseVideoBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         video.pause();
@@ -945,9 +1055,13 @@ function handleVideos() {
         }
       });
     });
+
     togglePlayVideoBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         video.play();
+        lenis.scrollTo(videoWrapper, {
+          offset: window.innerWidth > 767 ? -20 : -200,
+        });
         if (
           !btn.hasAttribute('hero-video-play-btn') &&
           window.innerWidth < 767 &&
@@ -973,6 +1087,7 @@ function handleVideos() {
     });
   });
 }
+
 //
 // Handle Thumbnail Video
 function handleFeatureThubnailVideos() {
@@ -1172,7 +1287,7 @@ function handleWeglot() {
         langDropdown.classList.toggle('open');
 
         document.addEventListener('click', (event) => {
-          if (!langDropdown.contains(event.target)) {
+          if (!langDropdown.contains(event.target) && !event.target.closest('[slide-to]')) {
             langDropdown.classList.remove('open'); // Close if clicked outside
           }
         });

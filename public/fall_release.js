@@ -8800,22 +8800,43 @@
         scrollTrigger: sliderVideos[0],
         onStart: () => {
           tabSliderSection.querySelector('[slide-to="1"]').click();
+          playVideo(sliderVideos[0]);
         }
       });
       let videoBtns = tabSliderSection.querySelectorAll("[slide-to]");
       videoBtns.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          tabSliderSection.querySelectorAll("video").forEach((video) => video.pause());
+        btn.addEventListener("click", async () => {
+          await pauseAllVideos();
           let selectedVideo = tabSliderSection.querySelector(
             `[data-video="${btn.getAttribute("slide-to")}"]`
           );
-          selectedVideo.play();
+          playVideo(selectedVideo);
         });
       });
+      function playVideo(video) {
+        if (video) {
+          video.pause();
+          try {
+            video.play();
+          } catch (error) {
+            console.error("Error attempting to play video:", error);
+          }
+        }
+      }
+      async function pauseAllVideos() {
+        let promises = Array.from(sliderVideos).map((video) => {
+          return new Promise((resolve) => {
+            video.pause();
+            video.currentTime = 0;
+            resolve();
+          });
+        });
+        await Promise.all(promises);
+      }
       function playNextVideo(currentIndex) {
         let nextIndex = (currentIndex + 1) % sliderVideos.length;
-        sliderVideos[nextIndex].play();
         tabSliderSection.querySelector(`[slide-to="${nextIndex + 1}"]`).click();
+        playVideo(sliderVideos[nextIndex]);
       }
       sliderVideos.forEach((video, index) => {
         video.addEventListener("ended", () => {
@@ -9127,20 +9148,32 @@
           clipPath: window.innerWidth > 767 ? "inset(1.25rem round 3rem)" : "inset(1.25rem round 2rem)"
         });
       });
+      document.querySelectorAll("[anim-section-clipPath-into-view-desktop]").forEach((section) => {
+        gsapWithCSS.to(section, {
+          duration: 1,
+          scrollTrigger: {
+            trigger: section,
+            start: section.getAttribute("start-at") ? section.getAttribute("start-at") : "top top",
+            //   end: section.getAttribute('end-at') ? section.getAttribute('end-at') : 'bottom bottom',
+            scrub: 1.5
+          },
+          clipPath: window.innerWidth > 991 ? "inset(1.25rem round 3rem)" : "inset(0rem round 0rem)"
+        });
+      });
     })();
     (() => {
       if (!document.querySelector(".experience-cards"))
         return;
       gsapWithCSS.utils.toArray(".experience-cards .experience-card").forEach((card) => {
         gsapWithCSS.from(card, {
-          y: "20rem",
+          y: window.innerWidth > 767 ? "20rem" : "4rem",
           scale: 0.75,
           opacity: 0,
           duration: 1.5,
           ease: "ease",
           scrollTrigger: {
             trigger: card,
-            start: "-30rem bottom"
+            start: window.innerWidth > 767 ? "-30rem bottom" : "-7rem bottom"
           }
         });
       });
@@ -9158,12 +9191,13 @@
         gsapWithCSS.to(".team-text-screens-wrap", { x: "-10%", ease: "power4.out" });
       });
       feedbackFormCloseBtns.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          gsapWithCSS.to(feedbackFormWrapper, { scale: 0, opacity: 0, ease: "power4.out" });
-          feedbackTrackerComponent.classList.remove("is-dark");
-          gsapWithCSS.to(".team-text-screens-wrap", { x: "0%", ease: "power4.out" });
-        });
+        btn.addEventListener("click", closeForm);
       });
+      function closeForm() {
+        gsapWithCSS.to(feedbackFormWrapper, { scale: 0, opacity: 0, ease: "power4.out" });
+        feedbackTrackerComponent.classList.remove("is-dark");
+        gsapWithCSS.to(".team-text-screens-wrap", { x: "0%", ease: "power4.out" });
+      }
       let form = feedbackTrackerComponent.querySelector("[get-access-form]");
       form.querySelector("#submit-btn").addEventListener("click", () => {
         gsapWithCSS.to(form, { y: "-100%", ease: "power4.out", duration: 0.7 });
@@ -9181,10 +9215,12 @@
       let nextBlock = form.querySelector("[form-next-step-block]");
       submitBtn.addEventListener("click", () => {
         form.querySelector("#submit-btn").click();
-        let pdfLink = form.parentElement.querySelector("[form-success-pdf-link]").getAttribute("href");
+      });
+      form.addEventListener("submit", () => {
         setTimeout(() => {
-          window.open(pdfLink, "_blank");
-        }, 700);
+          closeForm();
+          form.reset();
+        }, 2e3);
       });
       form.addEventListener("keydown", function(event) {
         if (event.key === "Enter" && event.target.tagName !== "TEXTAREA") {
@@ -9278,6 +9314,81 @@
       currentBlock.addEventListener("input", updateButtonStates);
       currentBlock.addEventListener("change", updateButtonStates);
       updateButtonStates();
+    })();
+    (() => {
+      function DownloadFile(fileName, fileUrl) {
+        var req = new XMLHttpRequest();
+        req.open("GET", fileUrl, true);
+        req.responseType = "blob";
+        req.onload = function() {
+          var blob = new Blob([req.response], { type: "application/octet-stream" });
+          var isIE = !!document.documentMode;
+          if (isIE) {
+            window.navigator.msSaveBlob(blob, fileName);
+          } else {
+            var url = window.URL || window.webkitURL;
+            var link = url.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.setAttribute("download", fileName);
+            a.setAttribute("href", link);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          }
+        };
+        req.send();
+      }
+      document.querySelectorAll("[download-asset]").forEach((button) => {
+        button.addEventListener("click", function() {
+          let assetUrl = this.getAttribute("download-asset");
+          let fileName = assetUrl.split("/").pop();
+          DownloadFile(fileName, assetUrl);
+        });
+      });
+      let pdfLinks = {
+        en: "https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/67043c48d27af9576d205dac_unlocked-fall-24-getyourguide-en.pdf",
+        es: "https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/67043c485445de53f69fb111_unlocked-fall-24-getyourguide-es.pdf",
+        de: "https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/67043c4859e6afbd0bbcedc1_unlocked-fall-24-getyourguide-de.pdf",
+        fr: "https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/67043c48babea820b3eebb3d_unlocked-fall-24-getyourguide-fr.pdf",
+        it: "https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/67043c48686759f9ae07e79d_unlocked-fall-24-getyourguide-it.pdf",
+        br: "https://cdn.prod.website-files.com/63bd3a43429a8b2425999aec/6704f8384f8fa7ca366e44ba_unlocked-fall-24-getyourguide-es.pdf"
+      };
+      document.querySelectorAll("[download-pdf]").forEach((button) => {
+        button.addEventListener("click", function() {
+          let currentLanguage = document.documentElement.lang || "en";
+          let pdfLink = pdfLinks[currentLanguage] || pdfLinks["en"];
+          let fileName = pdfLink.split("/").pop();
+          DownloadFile(fileName, pdfLink);
+        });
+      });
+    })();
+    (() => {
+      document.querySelectorAll("[share-to]").forEach((button) => {
+        button.addEventListener("click", function() {
+          const platform = this.getAttribute("share-to").toLowerCase();
+          const shareLink = this.getAttribute("share-link");
+          if (!shareLink)
+            return;
+          let url = "";
+          switch (platform) {
+            case "linkedin":
+              url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareLink)}`;
+              break;
+            case "facebook":
+              url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`;
+              break;
+            case "whatsapp":
+              url = `https://wa.me/?text=${encodeURIComponent(shareLink)}`;
+              break;
+            case "email":
+              url = `mailto:?subject=Check this out&body=${encodeURIComponent(shareLink)}`;
+              break;
+            default:
+              return;
+          }
+          window.open(url, "_blank");
+        });
+      });
     })();
   }
   function anchorNavigation() {
@@ -9380,34 +9491,77 @@
   }
   function handleVideos() {
     let videosOuterWrappers = document.querySelectorAll("[video-wrapper]");
+    const createIntersectionObserver = (video) => {
+      let observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting && !video.paused) {
+              video.pause();
+            }
+          });
+        },
+        {
+          threshold: 0.15
+          // Trigger when 25% of the video is visible
+        }
+      );
+      observer.observe(video);
+    };
     videosOuterWrappers.forEach((wrapper) => {
       let togglePlayVideoBtns = wrapper.querySelectorAll("[toggle-play-video]");
       let toggleCloseVideoBtns = wrapper.querySelectorAll("[toggle-close-video]");
-      let videoWrapper = wrapper.querySelector("[styled-video-player]");
-      let video = videoWrapper.querySelector("[styled-video-player] video");
+      let videoWrapper = wrapper.querySelector("[styled-video-player-wrapper]");
+      let video = videoWrapper.querySelector("video");
+      createIntersectionObserver(video);
       toggleCloseVideoBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
           video.pause();
-          gsapWithCSS.to(videoWrapper, {
-            duration: 0.35,
-            opacity: 0,
-            pointerEvents: "none",
-            display: "none",
-            onComplete: () => {
-              gsapWithCSS.to(videoWrapper, { zIndex: "-1" });
-            }
-          });
+          if (!btn.hasAttribute("hero-video-play-btn") && window.innerWidth < 767 && videoWrapper.closest(".video-element-wrapper")) {
+            gsapWithCSS.to(videoWrapper, {
+              duration: 0.35,
+              opacity: 0,
+              pointerEvents: "none",
+              height: "0",
+              marginTop: "0",
+              onComplete: () => {
+                gsapWithCSS.to(videoWrapper, { zIndex: "-1" });
+              }
+            });
+          } else {
+            gsapWithCSS.to(videoWrapper, {
+              duration: 0.35,
+              opacity: 0,
+              pointerEvents: "none",
+              onComplete: () => {
+                gsapWithCSS.to(videoWrapper, { zIndex: "-1" });
+              }
+            });
+          }
         });
       });
       togglePlayVideoBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
-          video.play(), gsapWithCSS.to(videoWrapper, {
-            duration: 0.35,
-            display: "block",
-            opacity: 1,
-            pointerEvents: "auto",
-            zIndex: "100"
+          video.play();
+          lenis.scrollTo(videoWrapper, {
+            offset: window.innerWidth > 767 ? -20 : -200
           });
+          if (!btn.hasAttribute("hero-video-play-btn") && window.innerWidth < 767 && videoWrapper.closest(".video-element-wrapper")) {
+            gsapWithCSS.to(videoWrapper, {
+              duration: 0.35,
+              opacity: 1,
+              pointerEvents: "auto",
+              zIndex: "100",
+              height: "auto",
+              marginTop: "-7rem"
+            });
+          } else {
+            gsapWithCSS.to(videoWrapper, {
+              duration: 0.35,
+              opacity: 1,
+              pointerEvents: "auto",
+              zIndex: "100"
+            });
+          }
         });
       });
     });
@@ -9588,7 +9742,7 @@
           event.stopPropagation();
           langDropdown.classList.toggle("open");
           document.addEventListener("click", (event2) => {
-            if (!langDropdown.contains(event2.target)) {
+            if (!langDropdown.contains(event2.target) && !event2.target.closest("[slide-to]")) {
               langDropdown.classList.remove("open");
             }
           });
