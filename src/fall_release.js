@@ -163,19 +163,21 @@ function handleRegularAnimation() {
 }
 
 function init() {
+  handleWeglot();
   handleScroll();
   anchorNavigation();
   handleCode();
-  handleWeglot();
   handleRegularAnimation();
   handleFeatureThubnailVideos();
+  setTimeout(() => {
+    handleSlider();
+  }, 1000);
   setTimeout(() => {
     handleVideos();
     handleConfetti();
     handlePopups();
-    handleSlider();
     FooterScroll();
-  }, 1000);
+  }, 2000);
 }
 init();
 

@@ -8774,19 +8774,21 @@
     }
   }
   function init4() {
+    handleWeglot();
     handleScroll();
     anchorNavigation();
     handleCode();
-    handleWeglot();
     handleRegularAnimation();
     handleFeatureThubnailVideos();
+    setTimeout(() => {
+      handleSlider();
+    }, 1e3);
     setTimeout(() => {
       handleVideos();
       handleConfetti();
       handlePopups();
-      handleSlider();
       FooterScroll();
-    }, 1e3);
+    }, 2e3);
   }
   init4();
   function handleCode() {
