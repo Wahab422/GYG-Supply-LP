@@ -31,20 +31,13 @@ function handleScroll() {
     lenis.raf(time);
     requestAnimationFrame(raf);
   }
-  if (window.innerWidth > 767) {
-    lenis.on('scroll', () => {
+  lenis.on('scroll', () => {
+    if (window.innerWidth > 768) {
       ScrollTrigger.refresh();
-    });
-  } else {
-    const sections = document.querySelectorAll('section');
-
-    ScrollTrigger.batch(sections, {
-      start: 'top bottom',
-      onEnter: (batch) => {
-        ScrollTrigger.refresh(); // Refresh only when entering sections on mobile
-      },
-    });
-  }
+    } else {
+      ScrollTrigger.update();
+    }
+  });
   requestAnimationFrame(raf);
 
   document.querySelector('[scrollToTop]').addEventListener('click', () => {
