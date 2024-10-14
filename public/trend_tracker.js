@@ -8882,22 +8882,13 @@
       lenis.raf(time);
       requestAnimationFrame(raf);
     }
-    if (window.innerWidth > 767) {
-      lenis.on("scroll", () => {
+    lenis.on("scroll", () => {
+      if (window.innerWidth > 768) {
         ScrollTrigger2.refresh();
-      });
-    } else {
-      const sections = document.querySelectorAll("section");
-      sections.forEach((section) => {
-        ScrollTrigger2.create({
-          trigger: section,
-          start: "top bottom",
-          onEnter: () => {
-            ScrollTrigger2.refresh();
-          }
-        });
-      });
-    }
+      } else {
+        ScrollTrigger2.update();
+      }
+    });
     requestAnimationFrame(raf);
     document.querySelectorAll("[data-scroll-to]").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -9117,21 +9108,23 @@
         } else {
           let tl = gsapWithCSS.timeline({
             scrollTrigger: {
-              trigger: item.querySelector(".takeways-item_text-block")
+              trigger: item.querySelector(".takeways-item_img-block"),
+              start: "bottom bottom"
             }
           });
           tl.from(item.querySelector(".takeways-item_text-block"), {
-            height: "3rem",
-            duration: 0.65
+            y: "-100%",
+            duration: 0.7,
+            ease: "power1.out"
           }).from(
             item.querySelectorAll("[anim-child]"),
             {
-              delay: 0.25,
               opacity: 0,
               y: "2rem",
-              stagger: 0.1
+              stagger: 0.1,
+              ease: "power1.out"
             },
-            "-=0.2"
+            "-=0.4"
           );
         }
       });

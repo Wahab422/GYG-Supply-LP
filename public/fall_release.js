@@ -8652,19 +8652,13 @@
       lenis.raf(time);
       requestAnimationFrame(raf);
     }
-    if (window.innerWidth > 767) {
-      lenis.on("scroll", () => {
+    lenis.on("scroll", () => {
+      if (window.innerWidth > 768) {
         ScrollTrigger2.refresh();
-      });
-    } else {
-      const sections = document.querySelectorAll("section");
-      ScrollTrigger2.batch(sections, {
-        start: "top bottom",
-        onEnter: (batch) => {
-          ScrollTrigger2.refresh();
-        }
-      });
-    }
+      } else {
+        ScrollTrigger2.update();
+      }
+    });
     requestAnimationFrame(raf);
     document.querySelector("[scrollToTop]").addEventListener("click", () => {
       lenis.scrollTo("top", { duration: 2 });
@@ -8774,7 +8768,6 @@
     }
   }
   function init4() {
-    handleWeglot();
     handleScroll();
     anchorNavigation();
     handleCode();
@@ -8788,10 +8781,32 @@
       handleConfetti();
       handlePopups();
       FooterScroll();
-    }, 2e3);
+    }, 2200);
+    (() => {
+      function scrollToSection(sectionId2) {
+        const targetSection = document.querySelector(sectionId2);
+        if (targetSection) {
+          const targetPosition = targetSection.offsetTop;
+          lenis.scrollTo(targetPosition, {
+            duration: 1.5
+          });
+        }
+      }
+      const urlParams = new URLSearchParams(window.location.search);
+      const sectionId = urlParams.get("sec");
+      if (sectionId) {
+        const sectionSelector = `#${sectionId}`;
+        scrollToSection(sectionSelector);
+      }
+    })();
   }
   init4();
   function handleCode() {
+    (() => {
+      if (window.innerWidth < 767 && document.querySelector("#teth-imgs")) {
+        document.querySelector("#teth-imgs").setAttribute("anim-stagger", ".graph-item");
+      }
+    })();
     (() => {
       let tabSliderSection = document.querySelector(".fr-acc_grid_slider-block");
       if (!tabSliderSection)
@@ -8960,13 +8975,6 @@
       });
     })();
     (() => {
-      if (document.querySelector("[hero-video-play-btn]")) {
-        let tl = gsapWithCSS.timeline({ scrollTrigger: "[hero-video-play-btn]" });
-        tl.from("[hero-video-play-btn]", { duration: 0.6, width: "3rem", ease: "power4.Out" }).from(
-          "[hero-video-play-btn] .hero-video-btn-text",
-          { display: "none", opacity: 0, duration: 0.35, ease: "power4.Out" }
-        );
-      }
       if (document.querySelector(".video-style-button")) {
         document.querySelectorAll(".video-style-button").forEach((btn) => {
           let tl = gsapWithCSS.timeline({ scrollTrigger: btn });
@@ -8997,9 +9005,9 @@
         }
         return false;
       }
-      if (checkCookie("loading-animation")) {
+      let urlParams = new URLSearchParams(window.location.search);
+      if (checkCookie("loading-animation") || urlParams.has("sec")) {
         document.querySelector(".loading-screen").remove();
-        window.scrollTo({ top: 0 });
         html.classList.add("ready");
         gsapWithCSS.from("[data-anim-element]", { opacity: 0, y: "2rem", duration: 1.25, stagger: 0.25 });
       } else {
@@ -9222,7 +9230,7 @@
         setTimeout(() => {
           closeForm();
           form.reset();
-        }, 2e3);
+        }, 3e3);
       });
       form.addEventListener("keydown", function(event) {
         if (event.key === "Enter" && event.target.tagName !== "TEXTAREA") {
@@ -9732,55 +9740,6 @@
         scrub: 2
       });
     }
-  }
-  function handleWeglot() {
-    (() => {
-      let langToggles = document.querySelectorAll(".lang-toggle");
-      if (langToggles.length < 1)
-        return;
-      langToggles.forEach((btn) => {
-        btn.addEventListener("click", (event) => {
-          let langDropdown = btn.closest(".lang-dropdown");
-          event.stopPropagation();
-          langDropdown.classList.toggle("open");
-          document.addEventListener("click", (event2) => {
-            if (!langDropdown.contains(event2.target) && !event2.target.closest("[slide-to]")) {
-              langDropdown.classList.remove("open");
-            }
-          });
-        });
-      });
-    })();
-    Weglot.initialize({
-      api_key: "wg_bb2924345b48f25dde987ebf8015b20a4"
-    });
-    document.querySelectorAll(".lang-dropdown [lang]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        let lang = btn.getAttribute("lang");
-        document.querySelectorAll("[lang-text]").forEach((text) => text.innerHTML = lang);
-        Weglot.switchTo(lang);
-        setTimeout(() => {
-          window.location.reload();
-        }, 1e3);
-      });
-    });
-    Weglot.on("languageChanged", function(newLang, prevLang) {
-      document.querySelectorAll("[lang-text]").forEach((text) => text.innerHTML = newLang);
-      document.querySelectorAll("[form-success-pdf-link]").forEach((link) => {
-        link.setAttribute(
-          "href",
-          link.closest("[get-access-form-wrapper]").querySelector("form").getAttribute(`data-pdf-${newLang}`)
-        );
-      });
-    });
-    Weglot.on("initialized", () => {
-      let currentLanguage = Weglot.getCurrentLang();
-      document.querySelectorAll("[data-wg-lang-element]").forEach((ele) => {
-        if (ele.getAttribute("data-wg-lang-element") !== currentLanguage) {
-          ele.remove();
-        }
-      });
-    });
   }
   function handleConfetti() {
     let button = document.querySelector("#submit-btn");

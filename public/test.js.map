@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": ["../bin/live-reload.js"],
-  "sourcesContent": ["new EventSource(`${SERVE_ORIGIN}/esbuild`).addEventListener('change', () => location.reload());\r\n"],
-  "mappings": ";;;AAAA,MAAI,YAAY,GAAG,uBAAY,UAAU,EAAE,iBAAiB,UAAU,MAAM,SAAS,OAAO,CAAC;",
+  "sources": ["../bin/live-reload.js", "../src/test.js"],
+  "sourcesContent": ["new EventSource(`${SERVE_ORIGIN}/esbuild`).addEventListener('change', () => location.reload());\r\n", "const logoWrapper = document.querySelector('.logo-screen'); // Assuming .logo-list is the container for all logos\r\nconst logos = document.querySelectorAll('.logo-item');\r\n\r\ngsap.set(logos, { autoAlpha: 1 });\r\n\r\n// Clone the list to create an infinite looping effect\r\nconst listHeight = logoWrapper.scrollHeight; // Get the height of the entire list\r\nconst duration = logos.length * 2.5; // Duration for the full scroll\r\n\r\ngsap.to(logoWrapper, {\r\n  yPercent: -100, // Move the entire list upwards\r\n  duration: duration,\r\n  ease: 'none',\r\n  repeat: -1, // Infinite loop\r\n  modifiers: {\r\n    yPercent: gsap.utils.wrap(0, -100), // Wrap the movement to loop it continuously\r\n  },\r\n});\r\n"],
+  "mappings": ";;;AAAA,MAAI,YAAY,GAAG,uBAAY,UAAU,EAAE,iBAAiB,UAAU,MAAM,SAAS,OAAO,CAAC;;;ACA7F,MAAM,cAAc,SAAS,cAAc,cAAc;AACzD,MAAM,QAAQ,SAAS,iBAAiB,YAAY;AAEpD,OAAK,IAAI,OAAO,EAAE,WAAW,EAAE,CAAC;AAGhC,MAAM,aAAa,YAAY;AAC/B,MAAM,WAAW,MAAM,SAAS;AAEhC,OAAK,GAAG,aAAa;AAAA,IACnB,UAAU;AAAA;AAAA,IACV;AAAA,IACA,MAAM;AAAA,IACN,QAAQ;AAAA;AAAA,IACR,WAAW;AAAA,MACT,UAAU,KAAK,MAAM,KAAK,GAAG,IAAI;AAAA;AAAA,IACnC;AAAA,EACF,CAAC;",
   "names": []
 }
