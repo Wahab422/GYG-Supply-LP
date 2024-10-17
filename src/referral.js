@@ -137,7 +137,7 @@ function handleCode() {
         .writeText(textToCopy)
         .then(function () {
           const originalText = button.textContent;
-          button.textContent = 'Copied!';
+          button.textContent = document.querySelector('[copied-text]').innerHTML;
 
           setTimeout(function () {
             button.textContent = originalText;
