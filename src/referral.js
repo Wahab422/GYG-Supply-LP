@@ -29,9 +29,21 @@ function handleScroll() {
     lenis.raf(time);
     requestAnimationFrame(raf);
   }
-
+  lenis.on('scroll', () => {
+    if (window.innerWidth > 768) {
+      ScrollTrigger.refresh();
+    } else {
+      ScrollTrigger.update();
+    }
+  });
   requestAnimationFrame(raf);
+
+  document.querySelector('[scrollToTop]').addEventListener('click', () => {
+    lenis.scrollTo('top', { duration: 2 });
+  });
+  //
 }
+
 
 function handleAnimation() {
   // Animate Stagger Elements
