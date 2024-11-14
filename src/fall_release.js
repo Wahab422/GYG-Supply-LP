@@ -1350,7 +1350,6 @@ function handleWeglot() {
         ele.remove();
       }
     });
-    console.log('INITIALED');
   });
 }
 function handleConfetti() {
@@ -1362,6 +1361,7 @@ function handleConfetti() {
     confetti({
       particleCount: 150,
       spread: 60,
+      colors: ['#ff5533', '#1a2b49', '#FFFFFF', '#F4CDD7', '#81BEFF', '#BEDCFD'], // Custom colors
       origin: {
         x: (rect.left + rect.width / 2) / window.innerWidth, // horizontal center of the block
         y: (rect.top + rect.height / 2) / window.innerHeight, // vertical center of the block
